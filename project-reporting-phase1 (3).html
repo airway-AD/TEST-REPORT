@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Reporting — Disway</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #1a56db;
+    --blue-light: #e8f0fe;
+    --blue-mid: #3b6fd4;
+    --text: #111827;
+    --text-sec: #6b7280;
+    --border: #e5e7eb;
+    --bg-card: #f9fafb;
+    --red: #e02424;
+    --green: #057a55;
+    --green-light: #f0fdf4;
+    --yellow: #c27803;
+    --yellow-light: #fffbeb;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: #fff;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--blue);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-mark svg { width: 16px; height: 16px; }
+
+  .app-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .app-name span {
+    color: var(--text-sec);
+    font-weight: 400;
+  }
+
+  .data-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-sec);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .data-status:hover { border-color: var(--blue); }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #d1d5db;
+    transition: background 0.3s;
+  }
+
+  .status-dot.ok { background: #10b981; }
+  .status-dot.partial { background: #f59e0b; }
+
+  /* NAV */
+  .nav {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+  }
+
+  .nav-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-sec);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .nav-btn:hover { color: var(--text); }
+
+  .nav-btn.active {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    flex: 1;
+    padding: 32px;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* SECTION HEADERS */
+  .section-header {
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .section-sub {
+    font-size: 13px;
+    color: var(--text-sec);
+    margin-top: 4px;
+  }
+
+  /* GRID IMPORT */
+  .import-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .import-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .import-card:hover { border-color: #93c5fd; }
+
+  .import-card.valid {
+    border-color: #10b981;
+    background: #f0fdf4;
+  }
+
+  .import-card.error {
+    border-color: var(--red);
+    background: #fef2f2;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-sec);
+  }
+
+  .card-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bg-card);
+    color: var(--text-sec);
+    border: 1px solid var(--border);
+  }
+
+  .card-badge.ok {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #6ee7b7;
+  }
+
+  .card-badge.err {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  .paste-area {
+    width: 100%;
+    min-height: 90px;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    color: var(--text);
+    background: var(--bg-card);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+    line-height: 1.4;
+  }
+
+  .paste-area::placeholder { color: #9ca3af; }
+
+  .paste-area:focus { border-color: var(--blue); border-style: solid; background: #fff; }
+
+  .import-card.valid .paste-area {
+    border-color: #6ee7b7;
+    background: #fff;
+  }
+
+  .import-card.error .paste-area {
+    border-color: #fca5a5;
+    background: #fff;
+  }
+
+  .card-feedback {
+    margin-top: 8px;
+    font-size: 11px;
+    min-height: 16px;
+    line-height: 1.4;
+  }
+
+  .card-feedback.ok { color: #065f46; }
+  .card-feedback.err { color: #991b1b; }
+
+  .parse-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--blue);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .parse-btn:hover { background: var(--blue-mid); }
+
+  /* API CONFIG */
+  .api-section {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    background: #fff;
+    margin-bottom: 32px;
+  }
+
+  .api-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .api-section-sub {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-bottom: 16px;
+  }
+
+  .api-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sec);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .field-input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    color: var(--text);
+    background: var(--bg-card);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .field-input:focus { border-color: var(--blue); background: #fff; }
+
+  .field-input.valid { border-color: #10b981; background: #f0fdf4; }
+
+  /* DATA SUMMARY */
+  .summary-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 32px;
+  }
+
+  .summary-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .summary-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .summary-dot.ok { background: #10b981; }
+  .summary-dot.warn { background: #f59e0b; }
+
+  .summary-label {
+    font-size: 12px;
+    color: var(--text-sec);
+  }
+
+  .summary-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .summary-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 32px;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .empty-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .empty-desc {
+    font-size: 13px;
+    color: var(--text-sec);
+    max-width: 320px;
+    line-height: 1.6;
+  }
+
+  .empty-cta {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    background: var(--blue-light);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: background 0.15s;
+  }
+
+  .empty-cta:hover { background: #d1e0fc; }
+
+  /* FOOTER */
+  .footer {
+    padding: 16px 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-sec);
+  }
+
+  .footer-right { display: flex; gap: 16px; }
+
+  /* DATA MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    width: 520px;
+    max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text-sec);
+    margin-bottom: 20px;
+  }
+
+  .modal-sources {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .modal-source-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .modal-source-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .modal-source-detail { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
+
+  .modal-close {
+    width: 100%;
+    padding: 10px;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .modal-close:hover { background: var(--blue-mid); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--text);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    z-index: 300;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: #065f46; }
+  .toast.error { background: #991b1b; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .import-grid { grid-template-columns: 1fr; }
+    .api-grid { grid-template-columns: 1fr; }
+    .main { padding: 20px; }
+    .topbar { padding: 0 20px; }
+    .nav { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="5" height="5" rx="1" fill="white" opacity="0.9"/>
+        <rect x="9" y="2" width="5" height="5" rx="1" fill="white" opacity="0.6"/>
+        <rect x="2" y="9" width="5" height="5" rx="1" fill="white" opacity="0.6"/>
+        <rect x="9" y="9" width="5" height="5" rx="1" fill="white" opacity="0.3"/>
+      </svg>
+    </div>
+    <span class="app-name">Project Reporting <span>— Disway</span></span>
+  </div>
+  <button class="data-status" onclick="openModal()">
+    <span class="status-dot" id="globalDot"></span>
+    <span id="globalStatus">Aucune donnée chargée</span>
+  </button>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('import', this)">Importer les données</button>
+  <button class="nav-btn" onclick="showPage('overview', this)">Vue d'ensemble</button>
+  <button class="nav-btn" onclick="showPage('list', this)">Toutes les promos</button>
+  <button class="nav-btn" onclick="showPage('detail', this)">Fiche détaillée</button>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- PAGE : IMPORT -->
+  <div class="page active" id="page-import">
+
+    <div class="section-header">
+      <div class="section-title">Importer les données</div>
+      <div class="section-sub">Colle le JSON généré par chaque Office Script dans les zones correspondantes, puis valide.</div>
+    </div>
+
+    <!-- JSON IMPORT CARDS -->
+    <div class="import-grid">
+
+      <!-- NAV TCD -->
+      <div class="import-card" id="card-nav">
+        <div class="card-header">
+          <span class="card-label">Source 1</span>
+          <span class="card-badge" id="badge-nav">En attente</span>
+        </div>
+        <div class="card-title">NAV / TCD Ventes</div>
+        <div class="card-desc">Feuille PR_Output — copie A3 jusqu'à la ligne END.<br>Plusieurs lignes attendues, l'outil recolle les chunks automatiquement.</div>
+        <textarea
+          class="paste-area"
+          id="paste-nav"
+          placeholder='{"source":"NAV_TCD","generatedAt":"...","count":26188,"ventes":[...]}'
+          oninput="onPasteInput('nav')"
+          spellcheck="false"
+        ></textarea>
+        <div class="card-feedback" id="fb-nav"></div>
+        <button class="parse-btn" onclick="parseSource('nav')">Valider NAV TCD</button>
+      </div>
+
+      <!-- PROCESS 2026 -->
+      <div class="import-card" id="card-process">
+        <div class="card-header">
+          <span class="card-label">Source 2</span>
+          <span class="card-badge" id="badge-process">En attente</span>
+        </div>
+        <div class="card-title">Process 2026 — Promos</div>
+        <div class="card-desc">Feuille PR_Promos — cellule A3<br>Liste de toutes les promos avec statut, période, lien Mailchimp.</div>
+        <textarea
+          class="paste-area"
+          id="paste-process"
+          placeholder='{"source":"PROCESS_2026","count":64,"promos":[...]}'
+          oninput="onPasteInput('process')"
+          spellcheck="false"
+        ></textarea>
+        <div class="card-feedback" id="fb-process"></div>
+        <button class="parse-btn" onclick="parseSource('process')">Valider Process 2026</button>
+      </div>
+
+      <!-- TABLEAUX REFS -->
+      <div class="import-card" id="card-refs">
+        <div class="card-header">
+          <span class="card-label">Source 3</span>
+          <span class="card-badge" id="badge-refs">En attente</span>
+        </div>
+        <div class="card-title">Tableaux Références</div>
+        <div class="card-desc">Feuille PR_Refs — cellule A3<br>Liste des SKUs par promo avec code promo et dates.</div>
+        <textarea
+          class="paste-area"
+          id="paste-refs"
+          placeholder='{"source":"TABLEAUX_REFS","count":67,"refs":[...]}'
+          oninput="onPasteInput('refs')"
+          spellcheck="false"
+        ></textarea>
+        <div class="card-feedback" id="fb-refs"></div>
+        <button class="parse-btn" onclick="parseSource('refs')">Valider Références</button>
+      </div>
+
+    </div>
+
+    <!-- API CONFIG -->
+    <div class="api-section">
+      <div class="api-section-title">Configuration APIs</div>
+      <div class="api-section-sub">Ces valeurs sont stockées localement dans la session. Elles ne sont jamais envoyées ailleurs que vers les APIs concernées.</div>
+      <div class="api-grid">
+        <div class="field-group">
+          <label class="field-label" for="mc-key">Clé API Mailchimp</label>
+          <input
+            type="password"
+            class="field-input"
+            id="mc-key"
+            placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us1"
+            oninput="onApiInput('mc')"
+            autocomplete="off"
+          >
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="ga4-url">URL Backend GA4</label>
+          <input
+            type="text"
+            class="field-input"
+            id="ga4-url"
+            placeholder="https://script.google.com/macros/s/.../exec"
+            oninput="onApiInput('ga4')"
+            autocomplete="off"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY BAR (cachée par défaut) -->
+    <div class="summary-bar" id="summary-bar" style="display:none">
+      <div class="summary-item">
+        <div class="summary-dot ok" id="sum-nav-dot"></div>
+        <span class="summary-label">NAV :</span>
+        <span class="summary-value" id="sum-nav-val">-</span>
+      </div>
+      <div class="summary-sep"></div>
+      <div class="summary-item">
+        <div class="summary-dot ok" id="sum-process-dot"></div>
+        <span class="summary-label">Promos :</span>
+        <span class="summary-value" id="sum-process-val">-</span>
+      </div>
+      <div class="summary-sep"></div>
+      <div class="summary-item">
+        <div class="summary-dot ok" id="sum-refs-dot"></div>
+        <span class="summary-label">Références :</span>
+        <span class="summary-value" id="sum-refs-val">-</span>
+      </div>
+      <div class="summary-sep"></div>
+      <div class="summary-item">
+        <div class="summary-dot" id="sum-api-dot"></div>
+        <span class="summary-label">APIs :</span>
+        <span class="summary-value" id="sum-api-val">-</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PAGE : OVERVIEW -->
+  <div class="page" id="page-overview">
+    <div class="empty-state" id="overview-empty">
+      <div class="empty-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="8" height="8" rx="2" fill="#e5e7eb"/>
+          <rect x="12" y="2" width="8" height="8" rx="2" fill="#e5e7eb"/>
+          <rect x="2" y="12" width="8" height="8" rx="2" fill="#e5e7eb"/>
+          <rect x="12" y="12" width="8" height="8" rx="2" fill="#d1d5db"/>
+        </svg>
+      </div>
+      <div class="empty-title">Aucune donnée disponible</div>
+      <div class="empty-desc">Importe au minimum les données Process 2026 pour afficher la vue d'ensemble.</div>
+      <button class="empty-cta" onclick="showPage('import', document.querySelectorAll('.nav-btn')[0])">Aller à l'import</button>
+    </div>
+    <div id="overview-content" style="display:none">
+      <!-- Construit en Phase 2 -->
+      <div class="section-header">
+        <div class="section-title">Vue d'ensemble</div>
+        <div class="section-sub" id="overview-meta"></div>
+      </div>
+      <p style="color:var(--text-sec); font-size:13px;">Les graphiques et KPIs seront construits en Phase 2.</p>
+    </div>
+  </div>
+
+  <!-- PAGE : LISTE -->
+  <div class="page" id="page-list">
+    <div class="empty-state" id="list-empty">
+      <div class="empty-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="5" width="18" height="2" rx="1" fill="#e5e7eb"/>
+          <rect x="2" y="10" width="14" height="2" rx="1" fill="#e5e7eb"/>
+          <rect x="2" y="15" width="16" height="2" rx="1" fill="#e5e7eb"/>
+        </svg>
+      </div>
+      <div class="empty-title">Aucune promo chargée</div>
+      <div class="empty-desc">Importe les données Process 2026 pour lister toutes les promos.</div>
+      <button class="empty-cta" onclick="showPage('import', document.querySelectorAll('.nav-btn')[0])">Aller à l'import</button>
+    </div>
+    <div id="list-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Toutes les promos</div>
+        <div class="section-sub" id="list-meta"></div>
+      </div>
+      <p style="color:var(--text-sec); font-size:13px;">Le tableau filtrable sera construit en Phase 2.</p>
+    </div>
+  </div>
+
+  <!-- PAGE : DETAIL -->
+  <div class="page" id="page-detail">
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="9" stroke="#e5e7eb" stroke-width="2"/>
+          <path d="M11 7v4l3 3" stroke="#d1d5db" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="empty-title">Sélectionne une promo</div>
+      <div class="empty-desc">Ouvre la liste des promos et clique sur une ligne pour afficher la fiche détaillée avec graphes, KPIs et données Mailchimp / GA4.</div>
+      <button class="empty-cta" onclick="showPage('list', document.querySelectorAll('.nav-btn')[2])">Voir la liste</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span>Project Reporting — Disway © 2026</span>
+  <div class="footer-right">
+    <span id="footer-gen">Aucune donnée</span>
+    <span id="footer-version">Phase 1</span>
+  </div>
+</footer>
+
+<!-- MODAL STATUT DATA -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title">Statut des sources de données</div>
+    <div class="modal-sub">Résumé de ce qui est chargé dans la session actuelle.</div>
+    <div class="modal-sources" id="modal-sources-list"></div>
+    <button class="modal-close" onclick="closeModal()">Fermer</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ================================================================
+  // STATE GLOBAL
+  // ================================================================
+  const STATE = {
+    nav: null,       // données NAV TCD parsées
+    process: null,   // données Process 2026 parsées
+    refs: null,      // données Tableaux Refs parsées
+    mcKey: '',       // clé Mailchimp
+    ga4Url: '',      // URL backend GA4
+    loadedAt: null,  // timestamp dernier chargement
+  };
+
+  // Schémas attendus par source
+  const SCHEMAS = {
+    nav: {
+      requiredKeys: ['source', 'ventes'],
+      sourceVal: 'NAV_TCD',
+      arrayKey: 'ventes',
+      countKey: 'count',
+      label: 'NAV TCD Ventes',
+      validate: (obj) => {
+        if (!Array.isArray(obj.ventes)) return 'Le champ "ventes" doit être un tableau.';
+        if (obj.ventes.length === 0) return 'Le tableau "ventes" est vide.';
+        const sample = obj.ventes[0];
+        const required = ['sku', 'clt', 'date', 'montant', 'qte'];
+        for (const k of required) {
+          if (!(k in sample)) return `Champ manquant dans ventes[0] : "${k}"`;
+        }
+        return null;
+      }
+    },
+
+    process: {
+      requiredKeys: ['source', 'promos'],
+      sourceVal: 'PROCESS_2026',
+      arrayKey: 'promos',
+      countKey: 'count',
+      label: 'Process 2026 — Promos',
+      validate: (obj) => {
+        if (!Array.isArray(obj.promos)) return 'Le champ "promos" doit être un tableau.';
+        if (obj.promos.length === 0) return 'Le tableau "promos" est vide.';
+        const sample = obj.promos[0];
+        const required = ['numero', 'nom', 'marque', 'dateDebut', 'dateFin', 'statut'];
+        for (const k of required) {
+          if (!(k in sample)) return `Champ manquant dans promos[0] : "${k}"`;
+        }
+        return null;
+      }
+    },
+    refs: {
+      requiredKeys: ['source', 'refs'],
+      sourceVal: 'TABLEAUX_REFS',
+      arrayKey: 'refs',
+      countKey: 'count',
+      label: 'Tableaux Références',
+      validate: (obj) => {
+        if (!Array.isArray(obj.refs)) return 'Le champ "refs" doit être un tableau.';
+        if (obj.refs.length === 0) return 'Le tableau "refs" est vide.';
+        const sample = obj.refs[0];
+        const required = ['codePromo', 'skus'];
+        for (const k of required) {
+          if (!(k in sample)) return `Champ manquant dans refs[0] : "${k}"`;
+        }
+        return null;
+      }
+    }
+  };
+
+  // ================================================================
+  // NAVIGATION
+  // ================================================================
+  function showPage(pageId, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + pageId).classList.add('active');
+    if (btn) btn.classList.add('active');
+
+    // Rafraichir l'état des pages vides/remplies
+    if (pageId === 'overview') refreshOverviewState();
+    if (pageId === 'list') refreshListState();
+  }
+
+  // ================================================================
+  // PASTE INPUT — Feedback en live
+  // ================================================================
+  function onPasteInput(key) {
+    const area = document.getElementById('paste-' + key);
+    const fb = document.getElementById('fb-' + key);
+    const val = area.value.trim();
+
+    if (!val) {
+      setCardState(key, 'neutral');
+      fb.textContent = '';
+      fb.className = 'card-feedback';
+      return;
+    }
+
+    // Prévisualisation du format
+    if (val.startsWith('{') || val.startsWith('[')) {
+      fb.textContent = 'JSON détecté - clique sur Valider pour analyser.';
+      fb.className = 'card-feedback';
+    } else {
+      fb.textContent = 'Format inattendu - le JSON doit commencer par {';
+      fb.className = 'card-feedback err';
+    }
+  }
+
+  // ================================================================
+  // PARSE SOURCE
+  // ================================================================
+  function parseSource(key) {
+    const area = document.getElementById('paste-' + key);
+    const raw = area.value.trim();
+    const schema = SCHEMAS[key];
+
+    if (!raw) {
+      setCardState(key, 'error');
+      setFeedback(key, 'err', 'Zone vide - colle le JSON depuis Excel Online.');
+      return;
+    }
+
+    let obj;
+
+    if (key === 'nav') {
+      // ── NAV : format chunké compact ──────────────────────────────
+      // Excel colle les cellules séparées par \t (colonne) et \n (ligne)
+      // On normalise tout en lignes propres
+      const normalized = raw
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .replace(/\t/g, '\n');
+
+      const lines = normalized
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l && l !== 'END' && l !== 'NAV_DATA' && !l.match(/^\d{4}-\d{2}-\d{2}T/));
+
+      // Chercher le header (contient totalChunks + source)
+      let header = null;
+      let headerIdx = -1;
+      for (let i = 0; i < Math.min(lines.length, 10); i++) {
+        try {
+          const p = JSON.parse(lines[i]);
+          if (p && p.totalChunks && p.source === 'NAV_TCD') {
+            header = p; headerIdx = i; break;
+          }
+        } catch(e) {}
+      }
+
+      if (!header) {
+        setCardState(key, 'error');
+        setFeedback(key, 'err', 'Header NAV introuvable. Vérifie que tu as copié depuis A3 (ligne header) jusqu'à END.');
+        return;
+      }
+
+      // Recoller tous les chunks (tableaux JSON)
+      try {
+        const allVentesCompact = [];
+        for (let i = headerIdx + 1; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line.startsWith('[')) continue;
+          const chunk = JSON.parse(line);
+          for (const row of chunk) allVentesCompact.push(row);
+        }
+
+        if (allVentesCompact.length === 0) {
+          setCardState(key, 'error');
+          setFeedback(key, 'err', 'Aucune donnée trouvée après le header. Vérifie la sélection A3:A[END].');
+          return;
+        }
+
+        // Reconstruire les objets ventes depuis le format compact [sku, clt, dateMMDD, montant, qte]
+        const year = header.year || '2026';
+        const ventes = allVentesCompact.map(r => {
+          const dateMMDD = String(r[2]);
+          const date = dateMMDD.length === 4
+            ? year + '-' + dateMMDD.slice(0,2) + '-' + dateMMDD.slice(2,4)
+            : String(r[2]);
+          const montant = Number(r[3]);
+          const qte = Number(r[4]);
+          return {
+            sku: String(r[0]),
+            clt: String(r[1]),
+            date: date,
+            montant: montant,
+            qte: qte,
+            prixUnitaire: qte > 0 ? Math.round((montant / qte) * 100) / 100 : 0
+          };
+        });
+
+        obj = {
+          source: 'NAV_TCD',
+          generatedAt: header.generatedAt,
+          count: ventes.length,
+          ventes: ventes
+        };
+      } catch(e) {
+        setCardState(key, 'error');
+        setFeedback(key, 'err', 'Erreur recomposition : ' + e.message);
+        return;
+      }
+
+    } else {
+      // Sources 2 et 3 - parse JSON normal
+      try {
+        obj = JSON.parse(raw);
+      } catch (e) {
+        setCardState(key, 'error');
+        setFeedback(key, 'err', 'JSON invalide : ' + e.message);
+        return;
+      }
+    }
+
+    // Vérif source
+    if (obj.source !== schema.sourceVal) {
+      setCardState(key, 'error');
+      setFeedback(key, 'err', `Mauvaise source : attendu "${schema.sourceVal}", reçu "${obj.source}"`);
+      return;
+    }
+
+    // Validation custom
+    const err = schema.validate(obj);
+    if (err) {
+      setCardState(key, 'error');
+      setFeedback(key, 'err', err);
+      return;
+    }
+
+    // Succès
+    const count = obj[schema.arrayKey] ? obj[schema.arrayKey].length : obj[schema.countKey] || '?';
+    STATE[key] = obj;
+    STATE.loadedAt = new Date();
+
+    setCardState(key, 'valid');
+    setFeedback(key, 'ok', `${count.toLocaleString('fr-FR')} entrées chargées.${obj.generatedAt ? ' Généré le ' + formatDate(obj.generatedAt) : ''}`);
+    setBadge(key, 'ok', `${count.toLocaleString('fr-FR')} entrées`);
+
+    updateGlobalStatus();
+    updateSummaryBar();
+    showToast(`${schema.label} chargé avec succès.`, 'success');
+  }
+
+  // ================================================================
+  // API INPUT
+  // ================================================================
+  function onApiInput(type) {
+    if (type === 'mc') {
+      const val = document.getElementById('mc-key').value.trim();
+      STATE.mcKey = val;
+      if (val.length > 10 && val.includes('-')) {
+        document.getElementById('mc-key').classList.add('valid');
+      } else {
+        document.getElementById('mc-key').classList.remove('valid');
+      }
+    } else {
+      const val = document.getElementById('ga4-url').value.trim();
+      STATE.ga4Url = val;
+      if (val.startsWith('https://script.google.com')) {
+        document.getElementById('ga4-url').classList.add('valid');
+      } else {
+        document.getElementById('ga4-url').classList.remove('valid');
+      }
+    }
+    updateSummaryBar();
+    updateGlobalStatus();
+  }
+
+  // ================================================================
+  // UI HELPERS
+  // ================================================================
+  function setCardState(key, state) {
+    const card = document.getElementById('card-' + key);
+    card.classList.remove('valid', 'error');
+    if (state === 'valid') card.classList.add('valid');
+    if (state === 'error') card.classList.add('error');
+  }
+
+  function setFeedback(key, type, msg) {
+    const fb = document.getElementById('fb-' + key);
+    fb.textContent = msg;
+    fb.className = 'card-feedback ' + type;
+  }
+
+  function setBadge(key, type, text) {
+    const badge = document.getElementById('badge-' + key);
+    badge.textContent = text;
+    badge.className = 'card-badge ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : '');
+  }
+
+  function updateGlobalStatus() {
+    const sources = [STATE.nav, STATE.process, STATE.refs].filter(Boolean).length;
+    const dot = document.getElementById('globalDot');
+    const label = document.getElementById('globalStatus');
+
+    if (sources === 0) {
+      dot.className = 'status-dot';
+      label.textContent = 'Aucune donnée chargée';
+    } else if (sources < 3) {
+      dot.className = 'status-dot partial';
+      label.textContent = `${sources}/3 sources chargées`;
+    } else {
+      dot.className = 'status-dot ok';
+      label.textContent = `3/3 sources — Données prêtes`;
+    }
+  }
+
+  function updateSummaryBar() {
+    const bar = document.getElementById('summary-bar');
+    const hasAny = STATE.nav || STATE.process || STATE.refs;
+    if (!hasAny) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+
+    // NAV
+    if (STATE.nav) {
+      document.getElementById('sum-nav-val').textContent = (STATE.nav.ventes.length).toLocaleString('fr-FR') + ' lignes';
+    } else {
+      document.getElementById('sum-nav-val').textContent = 'Non chargé';
+      document.getElementById('sum-nav-dot').className = 'summary-dot warn';
+    }
+
+    // Process
+    if (STATE.process) {
+      document.getElementById('sum-process-val').textContent = STATE.process.promos.length + ' promos';
+    } else {
+      document.getElementById('sum-process-val').textContent = 'Non chargé';
+      document.getElementById('sum-process-dot').className = 'summary-dot warn';
+    }
+
+    // Refs
+    if (STATE.refs) {
+      document.getElementById('sum-refs-val').textContent = STATE.refs.refs.length + ' refs';
+    } else {
+      document.getElementById('sum-refs-val').textContent = 'Non chargé';
+      document.getElementById('sum-refs-dot').className = 'summary-dot warn';
+    }
+
+    // APIs
+    const apiOk = (STATE.mcKey.length > 10) + (STATE.ga4Url.length > 10);
+    document.getElementById('sum-api-val').textContent = `${apiOk}/2 configurées`;
+    document.getElementById('sum-api-dot').className = 'summary-dot ' + (apiOk === 2 ? 'ok' : apiOk === 1 ? 'warn' : '');
+
+    // Footer
+    if (STATE.loadedAt) {
+      document.getElementById('footer-gen').textContent = 'Dernière import : ' + formatDateFull(STATE.loadedAt);
+    }
+  }
+
+  function refreshOverviewState() {
+    const empty = document.getElementById('overview-empty');
+    const content = document.getElementById('overview-content');
+    if (!STATE.process) {
+      empty.style.display = 'flex';
+      content.style.display = 'none';
+    } else {
+      empty.style.display = 'none';
+      content.style.display = 'block';
+      const promos = STATE.process.promos;
+      document.getElementById('overview-meta').textContent =
+        `${promos.length} promos chargées - ${promos.filter(p=>p.statut==='Live').length} live actuellement.`;
+    }
+  }
+
+  function refreshListState() {
+    const empty = document.getElementById('list-empty');
+    const content = document.getElementById('list-content');
+    if (!STATE.process) {
+      empty.style.display = 'flex';
+      content.style.display = 'none';
+    } else {
+      empty.style.display = 'none';
+      content.style.display = 'block';
+      document.getElementById('list-meta').textContent =
+        `${STATE.process.promos.length} promos — Tableau et filtres disponibles en Phase 2.`;
+    }
+  }
+
+  // ================================================================
+  // MODAL
+  // ================================================================
+  function openModal() {
+    const list = document.getElementById('modal-sources-list');
+    const sources = [
+      { key: 'nav', label: 'NAV TCD Ventes', data: STATE.nav, detail: STATE.nav ? `${STATE.nav.ventes.length.toLocaleString('fr-FR')} lignes de ventes` : 'Non chargé' },
+      { key: 'process', label: 'Process 2026 — Promos', data: STATE.process, detail: STATE.process ? `${STATE.process.promos.length} promos` : 'Non chargé' },
+      { key: 'refs', label: 'Tableaux Références', data: STATE.refs, detail: STATE.refs ? `${STATE.refs.refs.length} refs` : 'Non chargé' },
+      { key: 'mc', label: 'API Mailchimp', data: STATE.mcKey.length > 10 ? true : null, detail: STATE.mcKey.length > 10 ? 'Clé configurée' : 'Non configurée' },
+      { key: 'ga4', label: 'Backend GA4', data: STATE.ga4Url.length > 10 ? true : null, detail: STATE.ga4Url.length > 10 ? 'URL configurée' : 'Non configurée' },
+    ];
+
+    list.innerHTML = sources.map(s => `
+      <div class="modal-source-row">
+        <div>
+          <div class="modal-source-name">${s.label}</div>
+          <div class="modal-source-detail">${s.detail}</div>
+        </div>
+        <span class="card-badge ${s.data ? 'ok' : ''}">${s.data ? 'OK' : 'Manquant'}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  }
+
+  // ================================================================
+  // TOAST
+  // ================================================================
+  let toastTimer;
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = 'toast'; }, 3000);
+  }
+
+  // ================================================================
+  // UTILS
+  // ================================================================
+  function formatDate(iso) {
+    try {
+      return new Date(iso).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    } catch { return iso; }
+  }
+
+  function formatDateFull(d) {
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  }
+</script>
+</body>
+</html>
