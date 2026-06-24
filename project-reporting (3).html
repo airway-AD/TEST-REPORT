@@ -1,0 +1,2635 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Reporting — Disway</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #1a56db;
+    --blue-light: #e8f0fe;
+    --blue-mid: #3b6fd4;
+    --text: #111827;
+    --text-sec: #6b7280;
+    --border: #e5e7eb;
+    --bg-card: #f9fafb;
+    --red: #e02424;
+    --green: #057a55;
+    --green-light: #f0fdf4;
+    --yellow: #c27803;
+    --yellow-light: #fffbeb;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: #fff;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--blue);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-mark svg { width: 16px; height: 16px; }
+
+  .app-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .app-name span {
+    color: var(--text-sec);
+    font-weight: 400;
+  }
+
+  .data-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-sec);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .data-status:hover { border-color: var(--blue); }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #d1d5db;
+    transition: background 0.3s;
+  }
+
+  .status-dot.ok { background: #10b981; }
+  .status-dot.partial { background: #f59e0b; }
+
+  /* NAV */
+  .nav {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+  }
+
+  .nav-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-sec);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .nav-btn:hover { color: var(--text); }
+
+  .nav-btn.active {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    flex: 1;
+    padding: 32px;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* SECTION HEADERS */
+  .section-header {
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .section-sub {
+    font-size: 13px;
+    color: var(--text-sec);
+    margin-top: 4px;
+  }
+
+  /* GRID IMPORT */
+  .import-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .import-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .import-card:hover { border-color: #93c5fd; }
+
+  .import-card.valid {
+    border-color: #10b981;
+    background: #f0fdf4;
+  }
+
+  .import-card.error {
+    border-color: var(--red);
+    background: #fef2f2;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-sec);
+  }
+
+  .card-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bg-card);
+    color: var(--text-sec);
+    border: 1px solid var(--border);
+  }
+
+  .card-badge.ok {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #6ee7b7;
+  }
+
+  .card-badge.err {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  .paste-area {
+    width: 100%;
+    min-height: 90px;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    color: var(--text);
+    background: var(--bg-card);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+    line-height: 1.4;
+  }
+
+  .paste-area::placeholder { color: #9ca3af; }
+
+  .paste-area:focus { border-color: var(--blue); border-style: solid; background: #fff; }
+
+  .import-card.valid .paste-area {
+    border-color: #6ee7b7;
+    background: #fff;
+  }
+
+  .import-card.error .paste-area {
+    border-color: #fca5a5;
+    background: #fff;
+  }
+
+  .card-feedback {
+    margin-top: 8px;
+    font-size: 11px;
+    min-height: 16px;
+    line-height: 1.4;
+  }
+
+  .card-feedback.ok { color: #065f46; }
+  .card-feedback.err { color: #991b1b; }
+
+  .parse-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--blue);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .parse-btn:hover { background: var(--blue-mid); }
+
+  /* API CONFIG */
+  .api-section {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    background: #fff;
+    margin-bottom: 32px;
+  }
+
+  .api-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .api-section-sub {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-bottom: 16px;
+  }
+
+  .api-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sec);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .field-input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    color: var(--text);
+    background: var(--bg-card);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .field-input:focus { border-color: var(--blue); background: #fff; }
+
+  .field-input.valid { border-color: #10b981; background: #f0fdf4; }
+
+  /* DATA SUMMARY */
+  .summary-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 32px;
+  }
+
+  .summary-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .summary-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .summary-dot.ok { background: #10b981; }
+  .summary-dot.warn { background: #f59e0b; }
+
+  .summary-label {
+    font-size: 12px;
+    color: var(--text-sec);
+  }
+
+  .summary-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .summary-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 32px;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .empty-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .empty-desc {
+    font-size: 13px;
+    color: var(--text-sec);
+    max-width: 320px;
+    line-height: 1.6;
+  }
+
+  .empty-cta {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    background: var(--blue-light);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: background 0.15s;
+  }
+
+  .empty-cta:hover { background: #d1e0fc; }
+
+  /* FOOTER */
+  .footer {
+    padding: 16px 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-sec);
+  }
+
+  .footer-right { display: flex; gap: 16px; }
+
+  /* DATA MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    width: 520px;
+    max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text-sec);
+    margin-bottom: 20px;
+  }
+
+  .modal-sources {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .modal-source-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .modal-source-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .modal-source-detail { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
+
+  .modal-close {
+    width: 100%;
+    padding: 10px;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .modal-close:hover { background: var(--blue-mid); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--text);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    z-index: 300;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: #065f46; }
+  .toast.error { background: #991b1b; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .import-grid { grid-template-columns: 1fr; }
+    .api-grid { grid-template-columns: 1fr; }
+    .main { padding: 20px; }
+    .topbar { padding: 0 20px; }
+    .nav { padding: 0 20px; }
+  }
+
+  /* ============ PHASE 2 & 3 STYLES ============ */
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .kpi-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    background: #fff;
+  }
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-sec);
+    margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-top: 4px;
+  }
+  .kpi-value.pos { color: var(--green); }
+  .kpi-value.neg { color: var(--red); }
+
+  /* CHART CARD */
+  .chart-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    background: #fff;
+    margin-bottom: 28px;
+  }
+  .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .chart-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .chart-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2px;
+  }
+  .chart-toggle button {
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sec);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chart-toggle button.active {
+    background: #fff;
+    color: var(--blue);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  /* BAR CHART (horizontal, overview) */
+  .hbar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .hbar-label {
+    width: 140px;
+    font-size: 12px;
+    color: var(--text);
+    text-align: right;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hbar-track {
+    flex: 1;
+    height: 22px;
+    background: var(--bg-card);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .hbar-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    min-width: 2px;
+  }
+  .hbar-value {
+    width: 90px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+
+  /* TABLE */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .data-table thead th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-sec);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  .data-table thead th:hover { color: var(--blue); }
+  .data-table tbody td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .data-table tbody tr {
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .data-table tbody tr:hover { background: var(--blue-light); }
+  .table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+
+  /* BADGES STATUT */
+  .badge-statut {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-statut.live { background: #d1fae5; color: #065f46; }
+  .badge-statut.terminee { background: #fee2e2; color: #991b1b; }
+  .badge-statut.standby { background: #fef3c7; color: #92400e; }
+  .badge-statut.autre { background: #f3f4f6; color: #4b5563; }
+
+  .badge-uplift {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .badge-uplift.pos { background: #d1fae5; color: #065f46; }
+  .badge-uplift.neg { background: #fee2e2; color: #991b1b; }
+  .badge-uplift.neutral { background: #f3f4f6; color: #6b7280; }
+
+  /* FILTERS */
+  .filters-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-select {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text);
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+  }
+  .filter-select:focus { border-color: var(--blue); }
+  .filter-search {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text);
+    background: #fff;
+    outline: none;
+    flex: 1;
+    min-width: 180px;
+  }
+  .filter-search:focus { border-color: var(--blue); }
+  .filter-count {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-left: auto;
+  }
+
+  /* DETAIL HEADER */
+  .detail-header {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    background: #fff;
+    margin-bottom: 24px;
+  }
+  .detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--blue);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .detail-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .detail-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .detail-chip {
+    font-size: 12px;
+    padding: 4px 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+  }
+
+  /* SECTION TITLE */
+  .sub-section {
+    margin: 28px 0 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sub-section .count-pill {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sec);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  /* API SECTION IN DETAIL */
+  .api-fetch-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .api-fetch-row input {
+    flex: 1;
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+  }
+  .api-fetch-row input:focus { border-color: var(--blue); }
+  .btn-fetch {
+    padding: 8px 16px;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-fetch:hover { background: var(--blue-mid); }
+  .btn-fetch:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .loading-spin {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-inline {
+    padding: 24px;
+    text-align: center;
+    color: var(--text-sec);
+    font-size: 13px;
+    background: var(--bg-card);
+    border-radius: 8px;
+  }
+
+  /* CLICKABLE OVERVIEW STAT */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .stat-box {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    background: #fff;
+  }
+  .stat-box-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--blue);
+    line-height: 1;
+  }
+  .stat-box-label {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-top: 6px;
+  }
+
+  /* TWO COL */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 800px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+  .panel {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    background: #fff;
+  }
+  .panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="5" height="5" rx="1" fill="white" opacity="0.9"/>
+        <rect x="9" y="2" width="5" height="5" rx="1" fill="white" opacity="0.6"/>
+        <rect x="2" y="9" width="5" height="5" rx="1" fill="white" opacity="0.6"/>
+        <rect x="9" y="9" width="5" height="5" rx="1" fill="white" opacity="0.3"/>
+      </svg>
+    </div>
+    <span class="app-name">Project Reporting <span>— Disway</span></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="data-status" id="reload-btn" onclick="loadFromBackend()" title="Recharger depuis le serveur">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="reload-label">Recharger</span>
+    </button>
+    <button class="data-status" onclick="openModal()">
+      <span class="status-dot" id="globalDot"></span>
+      <span id="globalStatus">Connexion au serveur...</span>
+    </button>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('overview', this)">Vue d'ensemble</button>
+  <button class="nav-btn" onclick="showPage('list', this)">Toutes les promos</button>
+  <button class="nav-btn" onclick="showPage('detail', this)">Fiche détaillée</button>
+  <button class="nav-btn" onclick="showPage('import', this)" style="margin-left:auto">⚙ Admin</button>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- PAGE : IMPORT -->
+  <div class="page" id="page-import">
+
+    <div class="section-header">
+      <div class="section-title">⚙ Administration des données</div>
+      <div class="section-sub">Espace réservé. Colle les JSON des Office Scripts, valide, puis pousse vers le serveur pour que tout le monde voie les données.</div>
+    </div>
+
+    <!-- BACKEND CONFIG -->
+    <div class="api-section" style="border-color:#1a56db;background:#f5f8ff">
+      <div class="api-section-title">Connexion serveur</div>
+      <div class="api-section-sub">L'URL du backend Apps Script. Les données poussées ici sont visibles par tous les utilisateurs de l'outil.</div>
+      <div class="api-grid">
+        <div class="field-group">
+          <label class="field-label" for="backend-url">URL Backend</label>
+          <input type="text" class="field-input" id="backend-url" placeholder="https://script.google.com/macros/s/.../exec" oninput="onBackendUrlInput()" autocomplete="off">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="admin-pwd">Mot de passe admin</label>
+          <input type="password" class="field-input" id="admin-pwd" placeholder="Requis pour pousser les données" autocomplete="off">
+        </div>
+      </div>
+    </div>
+
+    <!-- JSON IMPORT CARDS -->
+    <div class="import-grid">
+
+      <!-- NAV TCD -->
+      <div class="import-card" id="card-nav">
+        <div class="card-header">
+          <span class="card-label">Source 1</span>
+          <span class="card-badge" id="badge-nav">En attente</span>
+        </div>
+        <div class="card-title">NAV / TCD Ventes</div>
+        <div class="card-desc">Feuille PR_Output — copie A3 jusqu'à la ligne END.<br>Plusieurs lignes attendues, l'outil recolle les chunks automatiquement.</div>
+        <textarea
+          class="paste-area"
+          id="paste-nav"
+          placeholder='{"source":"NAV_TCD","generatedAt":"...","count":26188,"ventes":[...]}'
+          oninput="onPasteInput('nav')"
+          spellcheck="false"
+        ></textarea>
+        <div class="card-feedback" id="fb-nav"></div>
+        <button class="parse-btn" onclick="parseSource('nav')">Valider NAV TCD</button>
+      </div>
+
+      <!-- PROCESS 2026 -->
+      <div class="import-card" id="card-process">
+        <div class="card-header">
+          <span class="card-label">Source 2</span>
+          <span class="card-badge" id="badge-process">En attente</span>
+        </div>
+        <div class="card-title">Process 2026 — Promos</div>
+        <div class="card-desc">Feuille PR_Promos — cellule A3<br>Liste de toutes les promos avec statut, période, lien Mailchimp.</div>
+        <textarea
+          class="paste-area"
+          id="paste-process"
+          placeholder='{"source":"PROCESS_2026","count":64,"promos":[...]}'
+          oninput="onPasteInput('process')"
+          spellcheck="false"
+        ></textarea>
+        <div class="card-feedback" id="fb-process"></div>
+        <button class="parse-btn" onclick="parseSource('process')">Valider Process 2026</button>
+      </div>
+
+      <!-- TABLEAUX REFS -->
+      <div class="import-card" id="card-refs">
+        <div class="card-header">
+          <span class="card-label">Source 3</span>
+          <span class="card-badge" id="badge-refs">En attente</span>
+        </div>
+        <div class="card-title">Tableaux Références</div>
+        <div class="card-desc">Feuille PR_Refs — cellule A3<br>Liste des SKUs par promo avec code promo et dates.</div>
+        <textarea
+          class="paste-area"
+          id="paste-refs"
+          placeholder='{"source":"TABLEAUX_REFS","count":67,"refs":[...]}'
+          oninput="onPasteInput('refs')"
+          spellcheck="false"
+        ></textarea>
+        <div class="card-feedback" id="fb-refs"></div>
+        <button class="parse-btn" onclick="parseSource('refs')">Valider Références</button>
+      </div>
+
+    </div>
+
+    <!-- API CONFIG -->
+    <div class="api-section">
+      <div class="api-section-title">Configuration APIs</div>
+      <div class="api-section-sub">Ces valeurs sont stockées localement dans la session. Elles ne sont jamais envoyées ailleurs que vers les APIs concernées.</div>
+      <div class="api-grid">
+        <div class="field-group">
+          <label class="field-label" for="mc-key">Clé API Mailchimp</label>
+          <input
+            type="password"
+            class="field-input"
+            id="mc-key"
+            placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us1"
+            oninput="onApiInput('mc')"
+            autocomplete="off"
+          >
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="ga4-url">URL Backend GA4</label>
+          <input
+            type="text"
+            class="field-input"
+            id="ga4-url"
+            placeholder="https://script.google.com/macros/s/.../exec"
+            oninput="onApiInput('ga4')"
+            autocomplete="off"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY BAR (cachée par défaut) -->
+    <div class="summary-bar" id="summary-bar" style="display:none">
+      <div class="summary-item">
+        <div class="summary-dot ok" id="sum-nav-dot"></div>
+        <span class="summary-label">NAV :</span>
+        <span class="summary-value" id="sum-nav-val">-</span>
+      </div>
+      <div class="summary-sep"></div>
+      <div class="summary-item">
+        <div class="summary-dot ok" id="sum-process-dot"></div>
+        <span class="summary-label">Promos :</span>
+        <span class="summary-value" id="sum-process-val">-</span>
+      </div>
+      <div class="summary-sep"></div>
+      <div class="summary-item">
+        <div class="summary-dot ok" id="sum-refs-dot"></div>
+        <span class="summary-label">Références :</span>
+        <span class="summary-value" id="sum-refs-val">-</span>
+      </div>
+      <div class="summary-sep"></div>
+      <div class="summary-item">
+        <div class="summary-dot" id="sum-api-dot"></div>
+        <span class="summary-label">APIs :</span>
+        <span class="summary-value" id="sum-api-val">-</span>
+      </div>
+    </div>
+
+    <!-- PUSH BUTTON -->
+    <div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap">
+      <button class="btn-fetch" id="push-btn" onclick="pushToBackend()" style="padding:11px 24px;font-size:14px">Pousser vers le serveur</button>
+      <span id="push-status" style="font-size:13px;color:var(--text-sec)"></span>
+    </div>
+
+  </div>
+
+  <!-- PAGE : OVERVIEW -->
+  <div class="page active" id="page-overview">
+    <div class="empty-state" id="overview-empty">
+      <div class="empty-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="8" height="8" rx="2" fill="#e5e7eb"/>
+          <rect x="12" y="2" width="8" height="8" rx="2" fill="#e5e7eb"/>
+          <rect x="2" y="12" width="8" height="8" rx="2" fill="#e5e7eb"/>
+          <rect x="12" y="12" width="8" height="8" rx="2" fill="#d1d5db"/>
+        </svg>
+      </div>
+      <div class="empty-title">Aucune donnée disponible</div>
+      <div class="empty-desc">Importe au minimum les données Process 2026 pour afficher la vue d'ensemble.</div>
+      <button class="empty-cta" onclick="showPage('import', document.querySelectorAll('.nav-btn')[0])">Aller à l'import</button>
+    </div>
+    <div id="overview-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Vue d'ensemble</div>
+        <div class="section-sub" id="overview-meta"></div>
+      </div>
+      <div class="stat-row" id="overview-stats"></div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Répartition par catégorie</div>
+          <div id="chart-categories"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Répartition par marque</div>
+          <div id="chart-marques"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Top 5 promos par ventes générées</div>
+        <div id="top-promos"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE : LISTE -->
+  <div class="page" id="page-list">
+    <div class="empty-state" id="list-empty">
+      <div class="empty-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="5" width="18" height="2" rx="1" fill="#e5e7eb"/>
+          <rect x="2" y="10" width="14" height="2" rx="1" fill="#e5e7eb"/>
+          <rect x="2" y="15" width="16" height="2" rx="1" fill="#e5e7eb"/>
+        </svg>
+      </div>
+      <div class="empty-title">Aucune promo chargée</div>
+      <div class="empty-desc">Importe les données Process 2026 pour lister toutes les promos.</div>
+      <button class="empty-cta" onclick="showPage('import', document.querySelectorAll('.nav-btn')[0])">Aller à l'import</button>
+    </div>
+    <div id="list-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Toutes les promos</div>
+        <div class="section-sub" id="list-meta"></div>
+      </div>
+      <div class="filters-bar">
+        <select class="filter-select" id="filter-marque" onchange="renderList()"><option value="">Toutes marques</option></select>
+        <select class="filter-select" id="filter-categorie" onchange="renderList()"><option value="">Toutes catégories</option></select>
+        <select class="filter-select" id="filter-statut" onchange="renderList()"><option value="">Tous statuts</option></select>
+        <input class="filter-search" id="filter-search" placeholder="Rechercher une promo..." oninput="renderList()">
+        <span class="filter-count" id="list-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th onclick="sortList('numero')">Numéro</th>
+              <th onclick="sortList('nom')">Nom</th>
+              <th onclick="sortList('marque')">Marque</th>
+              <th onclick="sortList('categorie')">Catégorie</th>
+              <th onclick="sortList('periode')">Période</th>
+              <th onclick="sortList('statut')">Statut</th>
+              <th onclick="sortList('ventes')">Ventes</th>
+              <th onclick="sortList('uplift')">Uplift</th>
+            </tr>
+          </thead>
+          <tbody id="list-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE : DETAIL -->
+  <div class="page" id="page-detail">
+    <div class="empty-state" id="detail-empty">
+      <div class="empty-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="9" stroke="#e5e7eb" stroke-width="2"/>
+          <path d="M11 7v4l3 3" stroke="#d1d5db" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="empty-title">Sélectionne une promo</div>
+      <div class="empty-desc">Ouvre la liste des promos et clique sur une ligne pour afficher la fiche détaillée.</div>
+      <button class="empty-cta" onclick="showPage('list', document.querySelectorAll('.nav-btn')[2])">Voir la liste</button>
+    </div>
+    <div id="detail-content" style="display:none"></div>
+  </div>
+
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span>Project Reporting — Disway © 2026</span>
+  <div class="footer-right">
+    <span id="footer-gen">Aucune donnée</span>
+    <span id="footer-version">Phases 1-3</span>
+  </div>
+</footer>
+
+<!-- MODAL STATUT DATA -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title">Statut des sources de données</div>
+    <div class="modal-sub">Résumé de ce qui est chargé dans la session actuelle.</div>
+    <div class="modal-sources" id="modal-sources-list"></div>
+    <button class="modal-close" onclick="closeModal()">Fermer</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ================================================================
+  // STATE GLOBAL
+  // ================================================================
+  const STATE = {
+    nav: null,       // données NAV TCD parsées
+    process: null,   // données Process 2026 parsées
+    refs: null,      // données Tableaux Refs parsées
+    mcKey: '',       // clé Mailchimp
+    ga4Url: '',      // URL backend GA4
+    loadedAt: null,  // timestamp dernier chargement
+  };
+
+  // Schémas attendus par source
+  const SCHEMAS = {
+    nav: {
+      requiredKeys: ['source', 'ventes'],
+      sourceVal: 'NAV_TCD',
+      arrayKey: 'ventes',
+      countKey: 'count',
+      label: 'NAV TCD Ventes',
+      validate: (obj) => {
+        if (!Array.isArray(obj.ventes)) return 'Le champ "ventes" doit être un tableau.';
+        if (obj.ventes.length === 0) return 'Le tableau "ventes" est vide.';
+        const sample = obj.ventes[0];
+        const required = ['sku', 'clt', 'date', 'montant', 'qte'];
+        for (const k of required) {
+          if (!(k in sample)) return `Champ manquant dans ventes[0] : "${k}"`;
+        }
+        return null;
+      }
+    },
+
+    process: {
+      requiredKeys: ['source', 'promos'],
+      sourceVal: 'PROCESS_2026',
+      arrayKey: 'promos',
+      countKey: 'count',
+      label: 'Process 2026 — Promos',
+      validate: (obj) => {
+        if (!Array.isArray(obj.promos)) return 'Le champ "promos" doit être un tableau.';
+        if (obj.promos.length === 0) return 'Le tableau "promos" est vide.';
+        const sample = obj.promos[0];
+        const required = ['numero', 'nom', 'marque', 'dateDebut', 'dateFin', 'statut'];
+        for (const k of required) {
+          if (!(k in sample)) return `Champ manquant dans promos[0] : "${k}"`;
+        }
+        return null;
+      }
+    },
+    refs: {
+      requiredKeys: ['source', 'refs'],
+      sourceVal: 'TABLEAUX_REFS',
+      arrayKey: 'refs',
+      countKey: 'count',
+      label: 'Tableaux Références',
+      validate: (obj) => {
+        if (!Array.isArray(obj.refs)) return 'Le champ "refs" doit être un tableau.';
+        if (obj.refs.length === 0) return 'Le tableau "refs" est vide.';
+        const sample = obj.refs[0];
+        const required = ['codePromo', 'skus'];
+        for (const k of required) {
+          if (!(k in sample)) return `Champ manquant dans refs[0] : "${k}"`;
+        }
+        return null;
+      }
+    }
+  };
+
+  // ================================================================
+  // NAVIGATION
+  // ================================================================
+  function showPage(pageId, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + pageId).classList.add('active');
+    if (btn) btn.classList.add('active');
+
+    // Rafraichir l'état des pages vides/remplies
+    if (pageId === 'overview') refreshOverviewState();
+    if (pageId === 'list') refreshListState();
+  }
+
+  // ================================================================
+  // PASTE INPUT — Feedback en live
+  // ================================================================
+  function onPasteInput(key) {
+    const area = document.getElementById('paste-' + key);
+    const fb = document.getElementById('fb-' + key);
+    const val = area.value.trim();
+
+    if (!val) {
+      setCardState(key, 'neutral');
+      fb.textContent = '';
+      fb.className = 'card-feedback';
+      return;
+    }
+
+    // Prévisualisation du format
+    if (val.startsWith('{') || val.startsWith('[')) {
+      fb.textContent = 'JSON détecté - clique sur Valider pour analyser.';
+      fb.className = 'card-feedback';
+    } else {
+      fb.textContent = 'Format inattendu - le JSON doit commencer par {';
+      fb.className = 'card-feedback err';
+    }
+  }
+
+  // ================================================================
+  // PARSE SOURCE
+  // ================================================================
+  function parseSource(key) {
+    const area = document.getElementById('paste-' + key);
+    const raw = area.value.trim();
+    const schema = SCHEMAS[key];
+
+    if (!raw) {
+      setCardState(key, 'error');
+      setFeedback(key, 'err', 'Zone vide - colle le JSON depuis Excel Online.');
+      return;
+    }
+
+    let obj;
+
+    if (key === 'nav') {
+      // ── NAV : format chunké compact ──────────────────────────────
+      // Excel colle les cellules séparées par \t (colonne) et \n (ligne)
+      // On normalise tout en lignes propres
+      const normalized = raw
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .replace(/\t/g, '\n');
+
+      const lines = normalized
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l && l !== 'END' && l !== 'NAV_DATA' && !l.match(/^\d{4}-\d{2}-\d{2}T/));
+
+      // Chercher le header (contient totalChunks + source)
+      let header = null;
+      let headerIdx = -1;
+      for (let i = 0; i < Math.min(lines.length, 10); i++) {
+        try {
+          const p = JSON.parse(lines[i]);
+          if (p && p.totalChunks && p.source === 'NAV_TCD') {
+            header = p; headerIdx = i; break;
+          }
+        } catch(e) {}
+      }
+
+      if (!header) {
+        setCardState(key, 'error');
+        setFeedback(key, "err", "Header NAV introuvable. Vérifie que tu as copié depuis A3 jusqu\u0027à END.");
+        return;
+      }
+
+      // Recoller tous les chunks (tableaux JSON)
+      try {
+        const allVentesCompact = [];
+        for (let i = headerIdx + 1; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line.startsWith('[')) continue;
+          const chunk = JSON.parse(line);
+          for (const row of chunk) allVentesCompact.push(row);
+        }
+
+        if (allVentesCompact.length === 0) {
+          setCardState(key, 'error');
+          setFeedback(key, "err", "Aucune donnée trouvée après le header. Vérifie la sélection A3:A[END].");
+          return;
+        }
+
+        // Reconstruire les objets ventes depuis le format compact [sku, clt, dateMMDD, montant, qte]
+        const year = header.year || '2026';
+        const ventes = allVentesCompact.map(r => {
+          const dateMMDD = String(r[2]);
+          const date = dateMMDD.length === 4
+            ? year + '-' + dateMMDD.slice(0,2) + '-' + dateMMDD.slice(2,4)
+            : String(r[2]);
+          const montant = Number(r[3]);
+          const qte = Number(r[4]);
+          return {
+            sku: String(r[0]),
+            clt: String(r[1]),
+            date: date,
+            montant: montant,
+            qte: qte,
+            prixUnitaire: qte > 0 ? Math.round((montant / qte) * 100) / 100 : 0
+          };
+        });
+
+        obj = {
+          source: 'NAV_TCD',
+          generatedAt: header.generatedAt,
+          count: ventes.length,
+          ventes: ventes
+        };
+      } catch(e) {
+        setCardState(key, 'error');
+        setFeedback(key, 'err', 'Erreur recomposition : ' + e.message);
+        return;
+      }
+
+    } else {
+      // Sources 2 et 3 - parse JSON normal
+      try {
+        obj = JSON.parse(raw);
+      } catch (e) {
+        setCardState(key, 'error');
+        setFeedback(key, 'err', 'JSON invalide : ' + e.message);
+        return;
+      }
+    }
+
+    // Vérif source
+    if (obj.source !== schema.sourceVal) {
+      setCardState(key, 'error');
+      setFeedback(key, 'err', `Mauvaise source : attendu "${schema.sourceVal}", reçu "${obj.source}"`);
+      return;
+    }
+
+    // Validation custom
+    const err = schema.validate(obj);
+    if (err) {
+      setCardState(key, 'error');
+      setFeedback(key, 'err', err);
+      return;
+    }
+
+    // Succès
+    const count = obj[schema.arrayKey] ? obj[schema.arrayKey].length : obj[schema.countKey] || '?';
+    STATE[key] = obj;
+    STATE.loadedAt = new Date();
+
+    setCardState(key, 'valid');
+    setFeedback(key, 'ok', `${count.toLocaleString('fr-FR')} entrées chargées.${obj.generatedAt ? ' Généré le ' + formatDate(obj.generatedAt) : ''}`);
+    setBadge(key, 'ok', `${count.toLocaleString('fr-FR')} entrées`);
+
+    updateGlobalStatus();
+    updateSummaryBar();
+    showToast(`${schema.label} chargé avec succès.`, 'success');
+  }
+
+  // ================================================================
+  // API INPUT
+  // ================================================================
+  function onApiInput(type) {
+    if (type === 'mc') {
+      const val = document.getElementById('mc-key').value.trim();
+      STATE.mcKey = val;
+      if (val.length > 10 && val.includes('-')) {
+        document.getElementById('mc-key').classList.add('valid');
+      } else {
+        document.getElementById('mc-key').classList.remove('valid');
+      }
+    } else {
+      const val = document.getElementById('ga4-url').value.trim();
+      STATE.ga4Url = val;
+      if (val.startsWith('https://script.google.com')) {
+        document.getElementById('ga4-url').classList.add('valid');
+      } else {
+        document.getElementById('ga4-url').classList.remove('valid');
+      }
+    }
+    updateSummaryBar();
+    updateGlobalStatus();
+  }
+
+  // ================================================================
+  // UI HELPERS
+  // ================================================================
+  function setCardState(key, state) {
+    const card = document.getElementById('card-' + key);
+    card.classList.remove('valid', 'error');
+    if (state === 'valid') card.classList.add('valid');
+    if (state === 'error') card.classList.add('error');
+  }
+
+  function setFeedback(key, type, msg) {
+    const fb = document.getElementById('fb-' + key);
+    fb.textContent = msg;
+    fb.className = 'card-feedback ' + type;
+  }
+
+  function setBadge(key, type, text) {
+    const badge = document.getElementById('badge-' + key);
+    badge.textContent = text;
+    badge.className = 'card-badge ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : '');
+  }
+
+  function updateGlobalStatus() {
+    const sources = [STATE.nav, STATE.process, STATE.refs].filter(Boolean).length;
+    const dot = document.getElementById('globalDot');
+    const label = document.getElementById('globalStatus');
+
+    if (sources === 0) {
+      dot.className = 'status-dot';
+      label.textContent = 'Aucune donnée chargée';
+    } else if (sources < 3) {
+      dot.className = 'status-dot partial';
+      label.textContent = `${sources}/3 sources chargées`;
+    } else {
+      dot.className = 'status-dot ok';
+      label.textContent = `3/3 sources — Données prêtes`;
+    }
+  }
+
+  function updateSummaryBar() {
+    const bar = document.getElementById('summary-bar');
+    const hasAny = STATE.nav || STATE.process || STATE.refs;
+    if (!hasAny) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+
+    // NAV
+    if (STATE.nav) {
+      document.getElementById('sum-nav-val').textContent = (STATE.nav.ventes.length).toLocaleString('fr-FR') + ' lignes';
+    } else {
+      document.getElementById('sum-nav-val').textContent = 'Non chargé';
+      document.getElementById('sum-nav-dot').className = 'summary-dot warn';
+    }
+
+    // Process
+    if (STATE.process) {
+      document.getElementById('sum-process-val').textContent = STATE.process.promos.length + ' promos';
+    } else {
+      document.getElementById('sum-process-val').textContent = 'Non chargé';
+      document.getElementById('sum-process-dot').className = 'summary-dot warn';
+    }
+
+    // Refs
+    if (STATE.refs) {
+      document.getElementById('sum-refs-val').textContent = STATE.refs.refs.length + ' refs';
+    } else {
+      document.getElementById('sum-refs-val').textContent = 'Non chargé';
+      document.getElementById('sum-refs-dot').className = 'summary-dot warn';
+    }
+
+    // APIs
+    const apiOk = (STATE.mcKey.length > 10) + (STATE.ga4Url.length > 10);
+    document.getElementById('sum-api-val').textContent = `${apiOk}/2 configurées`;
+    document.getElementById('sum-api-dot').className = 'summary-dot ' + (apiOk === 2 ? 'ok' : apiOk === 1 ? 'warn' : '');
+
+    // Footer
+    if (STATE.loadedAt) {
+      document.getElementById('footer-gen').textContent = 'Dernière import : ' + formatDateFull(STATE.loadedAt);
+    }
+  }
+
+  function refreshOverviewState() {
+    const empty = document.getElementById('overview-empty');
+    const content = document.getElementById('overview-content');
+    if (!STATE.process) {
+      empty.style.display = 'flex';
+      content.style.display = 'none';
+    } else {
+      empty.style.display = 'none';
+      content.style.display = 'block';
+      const promos = STATE.process.promos;
+      document.getElementById('overview-meta').textContent =
+        `${promos.length} promos chargées - ${promos.filter(p=>p.statut==='Live').length} live actuellement.`;
+    }
+  }
+
+  function refreshListState() {
+    const empty = document.getElementById('list-empty');
+    const content = document.getElementById('list-content');
+    if (!STATE.process) {
+      empty.style.display = 'flex';
+      content.style.display = 'none';
+    } else {
+      empty.style.display = 'none';
+      content.style.display = 'block';
+      document.getElementById('list-meta').textContent =
+        `${STATE.process.promos.length} promos — Tableau et filtres disponibles en Phase 2.`;
+    }
+  }
+
+  // ================================================================
+  // MODAL
+  // ================================================================
+  function openModal() {
+    const list = document.getElementById('modal-sources-list');
+    const sources = [
+      { key: 'nav', label: 'NAV TCD Ventes', data: STATE.nav, detail: STATE.nav ? `${STATE.nav.ventes.length.toLocaleString('fr-FR')} lignes de ventes` : 'Non chargé' },
+      { key: 'process', label: 'Process 2026 — Promos', data: STATE.process, detail: STATE.process ? `${STATE.process.promos.length} promos` : 'Non chargé' },
+      { key: 'refs', label: 'Tableaux Références', data: STATE.refs, detail: STATE.refs ? `${STATE.refs.refs.length} refs` : 'Non chargé' },
+      { key: 'mc', label: 'API Mailchimp', data: STATE.mcKey.length > 10 ? true : null, detail: STATE.mcKey.length > 10 ? 'Clé configurée' : 'Non configurée' },
+      { key: 'ga4', label: 'Backend GA4', data: STATE.ga4Url.length > 10 ? true : null, detail: STATE.ga4Url.length > 10 ? 'URL configurée' : 'Non configurée' },
+    ];
+
+    list.innerHTML = sources.map(s => `
+      <div class="modal-source-row">
+        <div>
+          <div class="modal-source-name">${s.label}</div>
+          <div class="modal-source-detail">${s.detail}</div>
+        </div>
+        <span class="card-badge ${s.data ? 'ok' : ''}">${s.data ? 'OK' : 'Manquant'}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  }
+
+  // ================================================================
+  // TOAST
+  // ================================================================
+  let toastTimer;
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = 'toast'; }, 3000);
+  }
+
+  // ================================================================
+  // UTILS
+  // ================================================================
+  function formatDate(iso) {
+    try {
+      return new Date(iso).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    } catch { return iso; }
+  }
+
+  function formatDateFull(d) {
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  }
+
+  // ================================================================
+  // MOTEUR DE CALCUL — PHASE 2 & 3
+  // ================================================================
+
+  // ── Conversion de dates (3 formats gérés) ──────────────────────
+  function excelSerialToDate(serial) {
+    const epoch = new Date(Date.UTC(1899, 11, 30));
+    const d = new Date(epoch.getTime() + serial * 86400000);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function parseAnyDate(val) {
+    if (val === null || val === undefined) return null;
+    const s = String(val).trim();
+    if (!s) return null;
+    // Numéro série Excel pur (ex: 46196)
+    if (/^\d{4,5}(\.\d+)?$/.test(s)) return excelSerialToDate(parseFloat(s));
+    // Format >=DD/MM/YYYY ou DD/MM/YYYY
+    const cleaned = s.replace(/[><=\s]/g, '');
+    let m = cleaned.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    // Format ISO
+    m = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    return null;
+  }
+
+  function addDays(dateStr, n) {
+    const d = new Date(dateStr + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0,10);
+  }
+  function daysBetween(d1, d2) {
+    return Math.round((new Date(d2+'T00:00:00Z') - new Date(d1+'T00:00:00Z')) / 86400000);
+  }
+
+  function fmtMAD(n) {
+    if (n === null || n === undefined || isNaN(n)) return '-';
+    return Math.round(n).toLocaleString('fr-FR') + ' MAD';
+  }
+  function fmtNum(n) {
+    if (n === null || n === undefined || isNaN(n)) return '-';
+    return Math.round(n).toLocaleString('fr-FR');
+  }
+  function fmtPct(n) {
+    if (n === null || n === undefined || isNaN(n)) return '-';
+    return (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+  }
+
+  // ── Normaliser le statut ───────────────────────────────────────
+  function statutClass(statut) {
+    const s = (statut || '').toLowerCase();
+    if (s.includes('live')) return 'live';
+    if (s.includes('termin')) return 'terminee';
+    if (s.includes('standby')) return 'standby';
+    return 'autre';
+  }
+
+  // ── Matching promo → ref ───────────────────────────────────────
+  function findRefForPromo(promo) {
+    if (!STATE.refs) return null;
+    return STATE.refs.refs.find(r => {
+      const refNum = String(r.codePromo).split(/[\s\-]/)[0].trim();
+      return refNum === promo.numero;
+    });
+  }
+
+  // ── Récupérer les SKUs d'une promo ─────────────────────────────
+  function getSkusForPromo(promo) {
+    const ref = findRefForPromo(promo);
+    if (!ref || !Array.isArray(ref.skus)) return [];
+    return ref.skus.map(s => String(s).trim().toUpperCase()).filter(Boolean);
+  }
+
+  // ── Dates effectives d'une promo ───────────────────────────────
+  function getPromoDates(promo) {
+    let debut = parseAnyDate(promo.dateDebut);
+    let fin = parseAnyDate(promo.dateFin);
+    // Fallback sur les dates de la ref si manquantes
+    if (!debut || !fin) {
+      const ref = findRefForPromo(promo);
+      if (ref) {
+        if (!debut) debut = parseAnyDate(ref.dateDebut);
+        if (!fin) fin = parseAnyDate(ref.dateFin);
+      }
+    }
+    return { debut, fin };
+  }
+
+  // ── Calcul complet uplift pour une promo ───────────────────────
+  function computePromoMetrics(promo) {
+    const skus = getSkusForPromo(promo);
+    const { debut, fin } = getPromoDates(promo);
+
+    const result = {
+      skus, debut, fin,
+      mesurable: false,
+      raison: '',
+      baselineTotal: 0, baselinePerWeek: 0,
+      promoTotal: 0, expectedBaseline: 0,
+      uplift: 0, upliftPct: 0,
+      prixAvant: 0, prixPendant: 0,
+      baisseAbs: 0, baissePct: 0,
+      cltAvant: 0, cltPendant: 0,
+      promoWeeks: 0, promoDays: 0,
+      skuDetails: [],
+      weeks: []
+    };
+
+    if (skus.length === 0) { result.raison = 'Aucun SKU associé (pas de référence)'; return result; }
+    if (!debut || !fin) { result.raison = 'Dates de promo manquantes'; return result; }
+    if (!STATE.nav) { result.raison = 'Données NAV non chargées'; return result; }
+
+    result.mesurable = true;
+
+    const skuSet = new Set(skus);
+    const allVentes = STATE.nav.ventes.filter(v => skuSet.has(String(v.sku).toUpperCase()));
+
+    const promoDays = daysBetween(debut, fin) + 1;
+    const promoWeeks = promoDays / 7;
+    result.promoDays = promoDays;
+    result.promoWeeks = promoWeeks;
+
+    const baselineStart = addDays(debut, -28);
+    const baselineEnd = addDays(debut, -1);
+
+    const inRange = (d, a, b) => d >= a && d <= b;
+    const promoV = allVentes.filter(v => inRange(v.date, debut, fin));
+    const baseV = allVentes.filter(v => inRange(v.date, baselineStart, baselineEnd));
+
+    const sum = arr => arr.reduce((s,v) => s + (v.montant||0), 0);
+    const sumQ = arr => arr.reduce((s,v) => s + (v.qte||0), 0);
+    const cltCount = arr => new Set(arr.map(v => v.clt)).size;
+
+    result.baselineTotal = sum(baseV);
+    result.baselinePerWeek = result.baselineTotal / 4;
+    result.promoTotal = sum(promoV);
+    result.expectedBaseline = result.baselinePerWeek * promoWeeks;
+    result.uplift = result.promoTotal - result.expectedBaseline;
+    result.upliftPct = result.expectedBaseline > 0 ? (result.uplift / result.expectedBaseline * 100) : (result.promoTotal > 0 ? 100 : 0);
+
+    const qBase = sumQ(baseV), qPromo = sumQ(promoV);
+    result.prixAvant = qBase > 0 ? result.baselineTotal / qBase : 0;
+    result.prixPendant = qPromo > 0 ? result.promoTotal / qPromo : 0;
+    result.baisseAbs = result.prixAvant - result.prixPendant;
+    result.baissePct = result.prixAvant > 0 ? (result.baisseAbs / result.prixAvant * 100) : 0;
+
+    result.cltAvant = cltCount(baseV);
+    result.cltPendant = cltCount(promoV);
+
+    // Détail par SKU
+    const bySku = {};
+    for (const sku of skus) {
+      const sB = baseV.filter(v => String(v.sku).toUpperCase() === sku);
+      const sP = promoV.filter(v => String(v.sku).toUpperCase() === sku);
+      const caB = sum(sB), caP = sum(sP);
+      const qB = sumQ(sB), qP = sumQ(sP);
+      if (caB === 0 && caP === 0) continue; // ignorer SKUs sans aucune vente
+      bySku[sku] = {
+        sku,
+        prixAvant: qB > 0 ? caB/qB : 0,
+        prixPendant: qP > 0 ? caP/qP : 0,
+        caAvant: caB, caPendant: caP,
+        deltaCA: caP - caB,
+        cltAvant: cltCount(sB), cltPendant: cltCount(sP)
+      };
+    }
+    result.skuDetails = Object.values(bySku).sort((a,b)=>b.caPendant-a.caPendant);
+
+    // Graphe hebdo W-4 → W+N → W+4
+    const weeks = [];
+    for (let i = 4; i >= 1; i--) {
+      weeks.push({ label:`S-${i}`, start:addDays(debut,-7*i), end:addDays(debut,-7*(i-1)-1), type:'before' });
+    }
+    const nPromoWeeks = Math.ceil(promoWeeks);
+    for (let i = 0; i < nPromoWeeks; i++) {
+      let wEnd = addDays(debut, 7*(i+1)-1);
+      if (wEnd > fin) wEnd = fin;
+      weeks.push({ label: nPromoWeeks>1?`P${i+1}`:'Promo', start:addDays(debut,7*i), end:wEnd, type:'promo' });
+    }
+    for (let i = 1; i <= 4; i++) {
+      weeks.push({ label:`S+${i}`, start:addDays(fin,7*(i-1)+1), end:addDays(fin,7*i), type:'after' });
+    }
+    for (const w of weeks) {
+      const wv = allVentes.filter(v => inRange(v.date, w.start, w.end));
+      w.ca = sum(wv);
+      w.clt = cltCount(wv);
+    }
+    result.weeks = weeks;
+
+    return result;
+  }
+
+  // Cache des métriques
+  let METRICS_CACHE = {};
+  function getMetrics(promo) {
+    if (!METRICS_CACHE[promo.numero]) {
+      METRICS_CACHE[promo.numero] = computePromoMetrics(promo);
+    }
+    return METRICS_CACHE[promo.numero];
+  }
+  function clearMetricsCache() { METRICS_CACHE = {}; }
+
+
+  // ================================================================
+  // RENDU — VUE D'ENSEMBLE
+  // ================================================================
+  function refreshOverviewState() {
+    const empty = document.getElementById('overview-empty');
+    const content = document.getElementById('overview-content');
+    if (!STATE.process) {
+      empty.style.display = 'flex';
+      content.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    content.style.display = 'block';
+    renderOverview();
+  }
+
+  function renderOverview() {
+    const promos = STATE.process.promos;
+    const live = promos.filter(p => statutClass(p.statut)==='live').length;
+    const terminees = promos.filter(p => statutClass(p.statut)==='terminee').length;
+    const autres = promos.length - live - terminees;
+
+    document.getElementById('overview-meta').textContent =
+      `${promos.length} promos chargées — analyse croisée NAV / Process / Refs`;
+
+    // Stats boxes
+    document.getElementById('overview-stats').innerHTML = `
+      <div class="stat-box"><div class="stat-box-value">${promos.length}</div><div class="stat-box-label">Promos totales</div></div>
+      <div class="stat-box"><div class="stat-box-value">${live}</div><div class="stat-box-label">Live actuellement</div></div>
+      <div class="stat-box"><div class="stat-box-value">${terminees}</div><div class="stat-box-label">Terminées</div></div>
+      <div class="stat-box"><div class="stat-box-value">${autres}</div><div class="stat-box-label">Autres statuts</div></div>
+    `;
+
+    // Répartition catégories
+    const catCount = {};
+    promos.forEach(p => { const c = p.categorie || 'Non défini'; catCount[c] = (catCount[c]||0)+1; });
+    document.getElementById('chart-categories').innerHTML = renderHBars(catCount);
+
+    // Répartition marques
+    const marqueCount = {};
+    promos.forEach(p => { const m = p.marque || 'Non défini'; marqueCount[m] = (marqueCount[m]||0)+1; });
+    document.getElementById('chart-marques').innerHTML = renderHBars(marqueCount, 8);
+
+    // Top 5 promos par ventes (si NAV chargé)
+    const topEl = document.getElementById('top-promos');
+    if (!STATE.nav || !STATE.refs) {
+      topEl.innerHTML = '<div class="empty-inline">Importe NAV + Références pour calculer le top des ventes.</div>';
+    } else {
+      const withVentes = promos.map(p => ({ p, m: getMetrics(p) }))
+        .filter(x => x.m.mesurable && x.m.promoTotal > 0)
+        .sort((a,b) => b.m.promoTotal - a.m.promoTotal)
+        .slice(0, 5);
+      if (withVentes.length === 0) {
+        topEl.innerHTML = '<div class="empty-inline">Aucune promo avec ventes mesurables trouvée.</div>';
+      } else {
+        const max = withVentes[0].m.promoTotal;
+        topEl.innerHTML = withVentes.map(x => `
+          <div class="hbar-row" style="cursor:pointer" onclick="openDetail('${x.p.numero}')">
+            <div class="hbar-label" title="${esc(x.p.nom)}">${esc(x.p.nom)}</div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:${(x.m.promoTotal/max*100).toFixed(1)}%"></div></div>
+            <div class="hbar-value">${fmtNum(x.m.promoTotal)}</div>
+          </div>
+        `).join('');
+      }
+    }
+  }
+
+  function renderHBars(countObj, limit) {
+    const entries = Object.entries(countObj).sort((a,b)=>b[1]-a[1]);
+    const shown = limit ? entries.slice(0, limit) : entries;
+    if (shown.length === 0) return '<div class="empty-inline">Aucune donnée</div>';
+    const max = shown[0][1];
+    return shown.map(([label, count]) => `
+      <div class="hbar-row">
+        <div class="hbar-label" title="${esc(label)}">${esc(label)}</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:${(count/max*100).toFixed(1)}%"></div></div>
+        <div class="hbar-value">${count}</div>
+      </div>
+    `).join('');
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ================================================================
+  // RENDU — LISTE
+  // ================================================================
+  let LIST_SORT = { key: 'numero', dir: 1 };
+
+  function refreshListState() {
+    const empty = document.getElementById('list-empty');
+    const content = document.getElementById('list-content');
+    if (!STATE.process) {
+      empty.style.display = 'flex';
+      content.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    content.style.display = 'block';
+    populateFilters();
+    renderList();
+  }
+
+  function populateFilters() {
+    const promos = STATE.process.promos;
+    const marques = [...new Set(promos.map(p=>p.marque).filter(Boolean))].sort();
+    const cats = [...new Set(promos.map(p=>p.categorie).filter(Boolean))].sort();
+    const statuts = [...new Set(promos.map(p=>p.statut).filter(Boolean))].sort();
+
+    const fillSelect = (id, items, allLabel) => {
+      const sel = document.getElementById(id);
+      const cur = sel.value;
+      sel.innerHTML = `<option value="">${allLabel}</option>` + items.map(i=>`<option value="${esc(i)}">${esc(i)}</option>`).join('');
+      sel.value = cur;
+    };
+    fillSelect('filter-marque', marques, 'Toutes marques');
+    fillSelect('filter-categorie', cats, 'Toutes catégories');
+    fillSelect('filter-statut', statuts, 'Tous statuts');
+  }
+
+  function sortList(key) {
+    if (LIST_SORT.key === key) LIST_SORT.dir *= -1;
+    else { LIST_SORT.key = key; LIST_SORT.dir = 1; }
+    renderList();
+  }
+
+  function renderList() {
+    const promos = STATE.process.promos;
+    const fM = document.getElementById('filter-marque').value;
+    const fC = document.getElementById('filter-categorie').value;
+    const fS = document.getElementById('filter-statut').value;
+    const fSearch = document.getElementById('filter-search').value.toLowerCase();
+
+    let rows = promos.filter(p => {
+      if (fM && p.marque !== fM) return false;
+      if (fC && p.categorie !== fC) return false;
+      if (fS && p.statut !== fS) return false;
+      if (fSearch && !(`${p.numero} ${p.nom} ${p.marque}`.toLowerCase().includes(fSearch))) return false;
+      return true;
+    });
+
+    // Enrichir avec métriques
+    const enriched = rows.map(p => {
+      const m = (STATE.nav && STATE.refs) ? getMetrics(p) : null;
+      return { p, m,
+        ventes: m && m.mesurable ? m.promoTotal : -1,
+        uplift: m && m.mesurable ? m.upliftPct : null
+      };
+    });
+
+    // Tri
+    const k = LIST_SORT.key, dir = LIST_SORT.dir;
+    enriched.sort((a,b) => {
+      let va, vb;
+      if (k === 'ventes') { va=a.ventes; vb=b.ventes; }
+      else if (k === 'uplift') { va=a.uplift??-9999; vb=b.uplift??-9999; }
+      else if (k === 'periode') { va=parseAnyDate(a.p.dateDebut)||''; vb=parseAnyDate(b.p.dateDebut)||''; }
+      else { va=(a.p[k]||'').toString().toLowerCase(); vb=(b.p[k]||'').toString().toLowerCase(); }
+      if (va<vb) return -1*dir;
+      if (va>vb) return 1*dir;
+      return 0;
+    });
+
+    document.getElementById('list-count').textContent = `${enriched.length} promo${enriched.length>1?'s':''}`;
+    document.getElementById('list-meta').textContent =
+      (STATE.nav && STATE.refs) ? 'Ventes et uplift calculés depuis le cube NAV' : 'Importe NAV + Références pour voir ventes et uplift';
+
+    const tbody = document.getElementById('list-tbody');
+    tbody.innerHTML = enriched.map(({p, m}) => {
+      const dD = parseAnyDate(p.dateDebut), dF = parseAnyDate(p.dateFin);
+      const periode = (dD && dF) ? `${fmtDateShort(dD)} → ${fmtDateShort(dF)}` : '-';
+      let ventesCell = '-', upliftCell = '<span class="badge-uplift neutral">N/A</span>';
+      if (m && m.mesurable) {
+        ventesCell = fmtNum(m.promoTotal);
+        const cls = m.upliftPct > 5 ? 'pos' : m.upliftPct < -5 ? 'neg' : 'neutral';
+        upliftCell = `<span class="badge-uplift ${cls}">${fmtPct(m.upliftPct)}</span>`;
+      } else if (m && !m.mesurable) {
+        upliftCell = `<span class="badge-uplift neutral" title="${esc(m.raison)}">—</span>`;
+      }
+      return `
+        <tr onclick="openDetail('${esc(p.numero)}')">
+          <td style="font-weight:600">${esc(p.numero)}</td>
+          <td>${esc(p.nom)}</td>
+          <td>${esc(p.marque||'-')}</td>
+          <td>${esc(p.categorie||'-')}</td>
+          <td style="white-space:nowrap">${periode}</td>
+          <td><span class="badge-statut ${statutClass(p.statut)}">${esc(p.statut||'-')}</span></td>
+          <td style="font-weight:600">${ventesCell}</td>
+          <td>${upliftCell}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function fmtDateShort(iso) {
+    if (!iso) return '-';
+    const [y,m,d] = iso.split('-');
+    const mois = ['','janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+    return `${d} ${mois[parseInt(m)]}`;
+  }
+
+
+  // ================================================================
+  // RENDU — FICHE DÉTAILLÉE
+  // ================================================================
+  let CURRENT_PROMO = null;
+
+  function openDetail(numero) {
+    const promo = STATE.process.promos.find(p => p.numero === numero);
+    if (!promo) return;
+    CURRENT_PROMO = promo;
+    // Activer l'onglet detail
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-detail').classList.add('active');
+    document.querySelectorAll('.nav-btn')[3].classList.add('active');
+    renderDetail(promo);
+    window.scrollTo(0,0);
+  }
+
+  function renderDetail(promo) {
+    document.getElementById('detail-empty').style.display = 'none';
+    const el = document.getElementById('detail-content');
+    el.style.display = 'block';
+
+    const m = (STATE.nav && STATE.refs) ? getMetrics(promo) : null;
+    const { debut, fin } = getPromoDates(promo);
+    const semaine = debut ? getWeekNumber(debut) : '?';
+
+    let html = `
+      <button class="detail-back" onclick="showPage('list', document.querySelectorAll('.nav-btn')[2])">← Retour à la liste</button>
+      <div class="detail-header">
+        <div class="detail-title">${esc(promo.nom)}</div>
+        <div class="detail-meta">
+          <span class="detail-chip">${esc(promo.numero)}</span>
+          <span class="detail-chip">${esc(promo.marque||'-')}</span>
+          <span class="detail-chip">${esc(promo.categorie||'-')}</span>
+          <span class="badge-statut ${statutClass(promo.statut)}">${esc(promo.statut||'-')}</span>
+          ${debut&&fin ? `<span class="detail-chip">${fmtDateShort(debut)} → ${fmtDateShort(fin)}</span>` : ''}
+          ${debut ? `<span class="detail-chip">Lancée semaine ${semaine}</span>` : ''}
+        </div>
+      </div>
+    `;
+
+    if (!m) {
+      html += `<div class="empty-inline">Importe les données NAV + Références pour voir l'analyse complète (graphe, uplift, SKUs).</div>`;
+      el.innerHTML = html;
+      return;
+    }
+
+    if (!m.mesurable) {
+      html += `<div class="empty-inline">⚠ Promo non mesurable : ${esc(m.raison)}.<br>Les sections Mailchimp et GA4 restent disponibles ci-dessous.</div>`;
+      html += renderMailchimpSection(promo);
+      html += renderGA4Section(promo);
+      el.innerHTML = html;
+      return;
+    }
+
+    // KPIs
+    const upliftCls = m.uplift > 0 ? 'pos' : m.uplift < 0 ? 'neg' : '';
+    html += `
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Baseline / semaine</div><div class="kpi-value">${fmtNum(m.baselinePerWeek)}</div><div class="kpi-sub">moy. 4 sem. avant</div></div>
+        <div class="kpi-card"><div class="kpi-label">Ventes pendant promo</div><div class="kpi-value">${fmtNum(m.promoTotal)}</div><div class="kpi-sub">${m.promoDays} jours</div></div>
+        <div class="kpi-card"><div class="kpi-label">Uplift</div><div class="kpi-value ${upliftCls}">${fmtNum(m.uplift)}</div><div class="kpi-sub">${fmtPct(m.upliftPct)} vs baseline</div></div>
+        <div class="kpi-card"><div class="kpi-label">Prix unitaire moyen</div><div class="kpi-value">${fmtNum(m.prixPendant)}</div><div class="kpi-sub">avant : ${fmtNum(m.prixAvant)}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Baisse de prix</div><div class="kpi-value ${m.baisseAbs>0?'pos':''}">${fmtNum(m.baisseAbs)}</div><div class="kpi-sub">${fmtPct(-m.baissePct)}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Clients (CLT)</div><div class="kpi-value">${m.cltPendant}</div><div class="kpi-sub">avant : ${m.cltAvant}</div></div>
+      </div>
+    `;
+
+    // Graphe
+    html += `
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Évolution hebdomadaire</div>
+          <div class="chart-toggle">
+            <button class="active" id="tg-ca" onclick="toggleChart('ca')">CA (MAD)</button>
+            <button id="tg-clt" onclick="toggleChart('clt')">Clients</button>
+          </div>
+        </div>
+        <div id="weekly-chart">${renderWeeklyChart(m, 'ca')}</div>
+      </div>
+    `;
+
+    // Tableau SKUs
+    html += `<div class="sub-section">Détail par SKU <span class="count-pill">${m.skuDetails.length}</span></div>`;
+    if (m.skuDetails.length === 0) {
+      html += `<div class="empty-inline">Aucune vente trouvée sur les SKUs de cette promo.</div>`;
+    } else {
+      html += `
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr>
+              <th>SKU / Réf</th><th>Prix avant</th><th>Prix pendant</th>
+              <th>CA avant (4sem)</th><th>CA pendant</th><th>Δ CA</th>
+              <th>CLT avant</th><th>CLT pendant</th>
+            </tr></thead>
+            <tbody>
+              ${m.skuDetails.map(s => {
+                const dCls = s.deltaCA>0?'pos':s.deltaCA<0?'neg':'neutral';
+                return `<tr style="cursor:default">
+                  <td style="font-weight:600">${esc(s.sku)}</td>
+                  <td>${fmtNum(s.prixAvant)}</td>
+                  <td>${fmtNum(s.prixPendant)}</td>
+                  <td>${fmtNum(s.caAvant)}</td>
+                  <td>${fmtNum(s.caPendant)}</td>
+                  <td><span class="badge-uplift ${dCls}">${s.deltaCA>=0?'+':''}${fmtNum(s.deltaCA)}</span></td>
+                  <td>${s.cltAvant}</td>
+                  <td>${s.cltPendant}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    // Sections API
+    html += renderMailchimpSection(promo);
+    html += renderGA4Section(promo);
+
+    el.innerHTML = html;
+  }
+
+  // ── Graphe SVG hebdomadaire ────────────────────────────────────
+  let CHART_MODE = 'ca';
+  function toggleChart(mode) {
+    CHART_MODE = mode;
+    document.getElementById('tg-ca').classList.toggle('active', mode==='ca');
+    document.getElementById('tg-clt').classList.toggle('active', mode==='clt');
+    const m = getMetrics(CURRENT_PROMO);
+    document.getElementById('weekly-chart').innerHTML = renderWeeklyChart(m, mode);
+  }
+
+  function renderWeeklyChart(m, mode) {
+    const weeks = m.weeks;
+    if (!weeks || weeks.length === 0) return '<div class="empty-inline">Pas de données hebdo</div>';
+
+    const W = 760, H = 320, padL = 60, padR = 20, padT = 20, padB = 50;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const vals = weeks.map(w => mode==='ca' ? w.ca : w.clt);
+    const maxV = Math.max(...vals, 1);
+    const barGap = 8;
+    const barW = (plotW / weeks.length) - barGap;
+
+    // Baseline (moy 4 sem avant) en mode CA
+    const baseline = mode==='ca' ? m.baselinePerWeek : (weeks.filter(w=>w.type==='before').reduce((s,w)=>s+w.clt,0)/4);
+    const baselineY = padT + plotH - (baseline/maxV*plotH);
+
+    let bars = '';
+    weeks.forEach((w, i) => {
+      const v = mode==='ca' ? w.ca : w.clt;
+      const barH = (v/maxV)*plotH;
+      const x = padL + i*(barW+barGap) + barGap/2;
+      const y = padT + plotH - barH;
+      const color = w.type==='promo' ? '#1a56db' : (w.type==='before' ? '#cbd5e1' : '#e2e8f0');
+      bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(barH,0).toFixed(1)}" rx="3" fill="${color}"><title>${w.label}: ${mode==='ca'?fmtMAD(v):v+' clients'}\n${w.start} → ${w.end}</title></rect>`;
+      // Label
+      bars += `<text x="${(x+barW/2).toFixed(1)}" y="${H-padB+16}" text-anchor="middle" font-size="11" fill="#6b7280">${w.label}</text>`;
+      // Valeur au-dessus si non nul
+      if (v > 0) {
+        const disp = mode==='ca' ? (v>=1000?(v/1000).toFixed(0)+'k':v) : v;
+        bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-5).toFixed(1)}" text-anchor="middle" font-size="10" fill="#374151" font-weight="600">${disp}</text>`;
+      }
+    });
+
+    // Axe Y (graduations)
+    let yAxis = '';
+    for (let g=0; g<=4; g++) {
+      const val = maxV*g/4;
+      const yy = padT + plotH - (g/4*plotH);
+      yAxis += `<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#f1f5f9" stroke-width="1"/>`;
+      const lab = mode==='ca' ? (val>=1000?(val/1000).toFixed(0)+'k':Math.round(val)) : Math.round(val);
+      yAxis += `<text x="${padL-8}" y="${yy+4}" text-anchor="end" font-size="10" fill="#9ca3af">${lab}</text>`;
+    }
+
+    // Ligne baseline pointillée
+    let baselineLine = '';
+    if (baseline > 0 && baselineY >= padT && baselineY <= padT+plotH) {
+      baselineLine = `
+        <line x1="${padL}" y1="${baselineY.toFixed(1)}" x2="${W-padR}" y2="${baselineY.toFixed(1)}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,4"/>
+        <text x="${W-padR}" y="${(baselineY-5).toFixed(1)}" text-anchor="end" font-size="10" fill="#d97706" font-weight="600">baseline ${mode==='ca'?fmtNum(baseline):Math.round(baseline)}</text>
+      `;
+    }
+
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:var(--font)">${yAxis}${baselineLine}${bars}</svg>`;
+  }
+
+  function getWeekNumber(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00Z');
+    const oneJan = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    const days = Math.floor((d - oneJan) / 86400000);
+    return Math.ceil((days + oneJan.getUTCDay()+1)/7);
+  }
+
+
+  // ================================================================
+  // SECTION MAILCHIMP
+  // ================================================================
+  function renderMailchimpSection(promo) {
+    const lien = promo.lien || '';
+    const safeNum = esc(promo.numero).replace(/[^a-zA-Z0-9]/g,'_');
+    return `
+      <div class="sub-section">Performance Mailchimp</div>
+      <div class="panel">
+        <div class="api-fetch-row">
+          <input type="text" id="mc-link-${safeNum}" value="${esc(lien)}" placeholder="Lien Mailchimp de la campagne (https://mailchi.mp/...)">
+          <button class="btn-fetch" onclick="fetchMailchimp('${esc(promo.numero)}')">Récupérer les métriques</button>
+        </div>
+        <div id="mc-result-${safeNum}">
+          ${lien ? '<div class="empty-inline">Clique sur « Récupérer les métriques » pour interroger Mailchimp.</div>'
+                 : '<div class="empty-inline">Aucun lien Mailchimp pour cette promo. Colle-le ci-dessus si tu en as un.</div>'}
+        </div>
+      </div>
+    `;
+  }
+
+  async function fetchMailchimp(numero) {
+    const safeNum = numero.replace(/[^a-zA-Z0-9]/g,'_');
+    const linkInput = document.getElementById('mc-link-'+safeNum);
+    const resultEl = document.getElementById('mc-result-'+safeNum);
+    const link = linkInput.value.trim();
+
+    if (!STATE.mcKey) {
+      resultEl.innerHTML = '<div class="empty-inline">⚠ Clé API Mailchimp non configurée (onglet Importer).</div>';
+      return;
+    }
+    if (!link) {
+      resultEl.innerHTML = '<div class="empty-inline">⚠ Renseigne le lien Mailchimp.</div>';
+      return;
+    }
+
+    resultEl.innerHTML = '<div class="empty-inline"><span class="loading-spin" style="border-color:#cbd5e1;border-top-color:#1a56db"></span> Interrogation de Mailchimp...</div>';
+
+    // Mailchimp ne permet pas l'appel direct depuis le navigateur (CORS + sécurité clé).
+    // On passe par le backend GA4 (Apps Script) comme proxy si disponible, sinon on explique.
+    try {
+      if (STATE.ga4Url) {
+        // Le backend Apps Script peut servir de proxy Mailchimp
+        const url = `${STATE.ga4Url}?action=mailchimp&campaignUrl=${encodeURIComponent(link)}&apiKey=${encodeURIComponent(STATE.mcKey)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data && !data.error && (data.emails_sent !== undefined || data.opens !== undefined || data.report_summary)) {
+          resultEl.innerHTML = renderMailchimpData(data);
+          return;
+        }
+        if (data && data.error) {
+          resultEl.innerHTML = `<div class="empty-inline">Réponse backend : ${esc(data.error)}<br><span style="font-size:11px">Vérifie que le backend Apps Script gère bien l'action « mailchimp ».</span></div>`;
+          return;
+        }
+      }
+      // Pas de proxy → explication
+      resultEl.innerHTML = `<div class="empty-inline">
+        Mailchimp ne peut pas être appelé directement depuis le navigateur (sécurité de la clé API + CORS).<br>
+        <span style="font-size:11px">Il faut ajouter une action « mailchimp » dans ton backend Apps Script (le même que GA4) qui sert de proxy. Je peux te fournir ce code backend.</span>
+      </div>`;
+    } catch(e) {
+      resultEl.innerHTML = `<div class="empty-inline">Erreur : ${esc(e.message)}</div>`;
+    }
+  }
+
+  function renderMailchimpData(data) {
+    // Format flexible selon ce que renvoie le backend
+    const s = data.report_summary || data;
+    const sent = data.emails_sent || s.emails_sent || '-';
+    const opens = s.unique_opens ?? s.opens ?? '-';
+    const openRate = s.open_rate != null ? (s.open_rate*100).toFixed(1)+'%' : '-';
+    const clicks = s.subscriber_clicks ?? s.clicks ?? '-';
+    const clickRate = s.click_rate != null ? (s.click_rate*100).toFixed(1)+'%' : '-';
+    const sendTime = data.send_time || data.date || '-';
+    return `
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Audience</div><div class="kpi-value">${fmtNum(sent)}</div><div class="kpi-sub">destinataires</div></div>
+        <div class="kpi-card"><div class="kpi-label">Ouvertures</div><div class="kpi-value">${fmtNum(opens)}</div><div class="kpi-sub">${openRate} taux</div></div>
+        <div class="kpi-card"><div class="kpi-label">Clics</div><div class="kpi-value">${fmtNum(clicks)}</div><div class="kpi-sub">${clickRate} taux</div></div>
+        <div class="kpi-card"><div class="kpi-label">Date d'envoi</div><div class="kpi-value" style="font-size:15px">${sendTime!=='-'?fmtDateShort(parseAnyDate(sendTime)||sendTime.slice(0,10)):'-'}</div></div>
+      </div>
+    `;
+  }
+
+  // ================================================================
+  // SECTION GA4
+  // ================================================================
+  function renderGA4Section(promo) {
+    const safeNum = esc(promo.numero).replace(/[^a-zA-Z0-9]/g,'_');
+    // Tenter de deviner l'URL de page promo depuis le lien Mailchimp
+    return `
+      <div class="sub-section">Analytics GA4</div>
+      <div class="panel">
+        <div class="api-fetch-row">
+          <input type="text" id="ga4-url-${safeNum}" placeholder="Slug de la page promo (ex: promo-hisense-smart-tv-200626)">
+          <button class="btn-fetch" onclick="fetchGA4('${esc(promo.numero)}')">Récupérer GA4</button>
+        </div>
+        <div id="ga4-result-${safeNum}">
+          <div class="empty-inline">Saisis le slug de la page promo puis lance la récupération.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function fetchGA4(numero) {
+    const safeNum = numero.replace(/[^a-zA-Z0-9]/g,'_');
+    const urlInput = document.getElementById('ga4-url-'+safeNum);
+    const resultEl = document.getElementById('ga4-result-'+safeNum);
+    const pageUrl = urlInput.value.trim();
+
+    if (!STATE.ga4Url) {
+      resultEl.innerHTML = '<div class="empty-inline">⚠ URL Backend GA4 non configurée (onglet Importer).</div>';
+      return;
+    }
+    if (!pageUrl) {
+      resultEl.innerHTML = '<div class="empty-inline">⚠ Saisis le slug de la page promo.</div>';
+      return;
+    }
+
+    const promo = STATE.process.promos.find(p=>p.numero===numero);
+    const { debut, fin } = getPromoDates(promo);
+
+    resultEl.innerHTML = '<div class="empty-inline"><span class="loading-spin" style="border-color:#cbd5e1;border-top-color:#1a56db"></span> Interrogation de GA4...</div>';
+
+    try {
+      let url = `${STATE.ga4Url}?action=ga4&url=${encodeURIComponent(pageUrl)}`;
+      if (debut) url += `&startDate=${debut}`;
+      if (fin) url += `&endDate=${fin}`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if (data && !data.error) {
+        resultEl.innerHTML = renderGA4Data(data);
+      } else {
+        resultEl.innerHTML = `<div class="empty-inline">Réponse backend : ${esc(data.error || 'format inattendu')}</div>`;
+      }
+    } catch(e) {
+      resultEl.innerHTML = `<div class="empty-inline">Erreur : ${esc(e.message)}<br><span style="font-size:11px">Vérifie l'URL du backend GA4.</span></div>`;
+    }
+  }
+
+  function renderGA4Data(data) {
+    const ev = data.events || {};
+    const evtList = ['carousel_homepage_click','view_item_list','page_view','select_item','add_to_cart'];
+    let evtCards = '';
+    evtList.forEach(e => {
+      if (ev[e] !== undefined) {
+        evtCards += `<div class="kpi-card"><div class="kpi-label">${e.replace(/_/g,' ')}</div><div class="kpi-value">${fmtNum(ev[e])}</div></div>`;
+      }
+    });
+    return `
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Sessions</div><div class="kpi-value">${fmtNum(data.sessions)}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Utilisateurs</div><div class="kpi-value">${fmtNum(data.users)}</div></div>
+        ${evtCards}
+      </div>
+    `;
+  }
+
+
+
+  // ================================================================
+  // BACKEND — chargement central & push admin
+  // ================================================================
+
+  // URL backend par défaut — colle ton URL Apps Script entre les guillemets ci-dessous
+  const DEFAULT_BACKEND_URL = "_BACKEND_URL_HERE_";
+
+  function backendConfigured() {
+    const u = getBackendUrl();
+    return u && u.indexOf("_BACKEND") !== 0 && u.indexOf("script.google") >= 0;
+  }
+
+  function getBackendUrl() {
+    const input = document.getElementById('backend-url');
+    const val = input ? input.value.trim() : '';
+    if (val) return val;
+    // Si le défaut n'a pas été remplacé, renvoyer vide
+    if (DEFAULT_BACKEND_URL.indexOf("_BACKEND") === 0) return '';
+    return DEFAULT_BACKEND_URL;
+  }
+
+  function onBackendUrlInput() {
+    // Rien de spécial, juste stocker
+  }
+
+  // ── Charger les données depuis le serveur (tout le monde) ──────
+  async function loadFromBackend() {
+    const url = getBackendUrl();
+    const label = document.getElementById('reload-label');
+    const statusEl = document.getElementById('globalStatus');
+
+    if (!backendConfigured()) {
+      statusEl.textContent = 'Backend non configuré';
+      document.getElementById('globalDot').className = 'status-dot';
+      return;
+    }
+
+    label.innerHTML = '<span class="loading-spin" style="border-color:#cbd5e1;border-top-color:#1a56db"></span>';
+    statusEl.textContent = 'Chargement...';
+
+    try {
+      const resp = await fetch(url + '?action=load');
+      const data = await resp.json();
+
+      if (data.error) {
+        statusEl.textContent = 'Erreur serveur';
+        showToast('Erreur backend : ' + data.error, 'error');
+        label.textContent = 'Recharger';
+        return;
+      }
+
+      // Injecter dans STATE
+      if (data.nav)     STATE.nav = data.nav;
+      if (data.process) STATE.process = data.process;
+      if (data.refs)    STATE.refs = data.refs;
+      clearMetricsCache();
+
+      // Mettre à jour l'UI
+      updateGlobalStatus();
+      updateSummaryBar();
+
+      // Marquer les cartes comme chargées si on est sur admin
+      if (data.nav) { setCardState('nav','valid'); setBadge('nav','ok', data.nav.ventes.length.toLocaleString('fr-FR')+' entrées'); }
+      if (data.process) { setCardState('process','valid'); setBadge('process','ok', data.process.promos.length+' entrées'); }
+      if (data.refs) { setCardState('refs','valid'); setBadge('refs','ok', data.refs.refs.length+' entrées'); }
+
+      // Rafraichir la page active
+      const activePage = document.querySelector('.page.active');
+      if (activePage) {
+        if (activePage.id === 'page-overview') refreshOverviewState();
+        if (activePage.id === 'page-list') refreshListState();
+      }
+
+      // Statut + date de mise à jour
+      if (data.meta && data.meta.lastUpdate) {
+        const d = new Date(data.meta.lastUpdate);
+        document.getElementById('footer-gen').textContent =
+          'Données du ' + d.toLocaleDateString('fr-FR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      }
+
+      const nSources = [data.nav, data.process, data.refs].filter(Boolean).length;
+      label.textContent = 'Recharger';
+      if (nSources === 0) {
+        statusEl.textContent = 'Serveur vide — aucune donnée';
+        document.getElementById('globalDot').className = 'status-dot';
+      } else {
+        showToast('Données chargées depuis le serveur.', 'success');
+      }
+
+    } catch(e) {
+      statusEl.textContent = 'Serveur injoignable';
+      document.getElementById('globalDot').className = 'status-dot';
+      label.textContent = 'Recharger';
+      showToast('Impossible de joindre le backend : ' + e.message, 'error');
+    }
+  }
+
+  // ── Pousser les données vers le serveur (admin) ────────────────
+  async function pushToBackend() {
+    const url = getBackendUrl();
+    const pwd = document.getElementById('admin-pwd').value;
+    const statusEl = document.getElementById('push-status');
+    const btn = document.getElementById('push-btn');
+
+    if (!backendConfigured()) {
+      statusEl.textContent = '⚠ Renseigne l\u0027URL du backend (onglet Admin).';
+      return;
+    }
+    if (!pwd) {
+      statusEl.textContent = '⚠ Mot de passe requis.';
+      return;
+    }
+    if (!STATE.nav && !STATE.process && !STATE.refs) {
+      statusEl.textContent = '⚠ Aucune donnée à pousser. Valide au moins une source.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spin"></span> Envoi...';
+    statusEl.textContent = '';
+
+    const payload = {
+      action: 'save',
+      password: pwd,
+      updatedBy: 'admin'
+    };
+    if (STATE.nav)     payload.nav = JSON.stringify(STATE.nav);
+    if (STATE.process) payload.process = JSON.stringify(STATE.process);
+    if (STATE.refs)    payload.refs = JSON.stringify(STATE.refs);
+
+    try {
+      // Apps Script nécessite text/plain pour éviter le preflight CORS
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const data = await resp.json();
+
+      if (data.error) {
+        statusEl.innerHTML = '<span style="color:#991b1b">✗ ' + esc(data.error) + '</span>';
+      } else {
+        statusEl.innerHTML = '<span style="color:#065f46">✓ Poussé : ' + (data.saved||[]).join(', ') + '. Tout le monde voit maintenant ces données.</span>';
+        showToast('Données publiées sur le serveur.', 'success');
+      }
+    } catch(e) {
+      statusEl.innerHTML = '<span style="color:#991b1b">✗ Erreur réseau : ' + esc(e.message) + '</span>';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Pousser vers le serveur';
+    }
+  }
+
+  // ── Au démarrage : charger automatiquement depuis le backend ───
+  window.addEventListener('DOMContentLoaded', function() {
+    // Pré-remplir l'URL backend si défaut configuré
+    if (DEFAULT_BACKEND_URL.indexOf("_BACKEND") !== 0) {
+      const input = document.getElementById('backend-url');
+      if (input) input.value = DEFAULT_BACKEND_URL;
+      loadFromBackend();
+    } else {
+      document.getElementById('globalStatus').textContent = 'Backend non configuré — onglet Admin';
+      document.getElementById('globalDot').className = 'status-dot';
+    }
+  });
+
+</script>
+</body>
+</html>
