@@ -614,7 +614,7 @@
           <span class="card-badge" id="badge-nav">En attente</span>
         </div>
         <div class="card-title">NAV / TCD Ventes</div>
-        <div class="card-desc">Feuille PR_Output — cellule A3<br>Contient toutes les lignes de ventes avec SKU, CLT, date, montant, qté.</div>
+        <div class="card-desc">Feuille PR_Output — copie A3 jusqu'à la ligne END.<br>Plusieurs lignes attendues, l'outil recolle les chunks automatiquement.</div>
         <textarea
           class="paste-area"
           id="paste-nav"
@@ -844,6 +844,7 @@
         return null;
       }
     },
+
     process: {
       requiredKeys: ['source', 'promos'],
       sourceVal: 'PROCESS_2026',
@@ -934,14 +935,63 @@
       return;
     }
 
-    // Parse JSON
+    // ── Détection format chunké (NAV) ──────────────────────────────
     let obj;
-    try {
-      obj = JSON.parse(raw);
-    } catch (e) {
-      setCardState(key, 'error');
-      setFeedback(key, 'err', 'JSON invalide : ' + e.message);
-      return;
+    if (key === 'nav') {
+      // Excel colle les cellules séparées par \t (tab) et \n ou \r\n
+      // On normalise : remplace tabs par newlines, puis split
+      const normalized = raw.replace(/\t/g, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      const lines = normalized.split('\n').map(l => l.trim()).filter(l => l && l !== 'END' && l !== 'NAV_DATA');
+
+      // Chercher le header chunk parmi les lignes (contient totalChunks)
+      let header = null;
+      let headerIdx = -1;
+      for (let i = 0; i < Math.min(lines.length, 5); i++) {
+        try {
+          const parsed = JSON.parse(lines[i]);
+          if (parsed.totalChunks) { header = parsed; headerIdx = i; break; }
+        } catch(e) {}
+      }
+
+      if (header) {
+        // Format chunké - recoller toutes les lignes après le header
+        try {
+          const dataLines = lines.slice(headerIdx + 1).filter(l => {
+            // Garder uniquement les lignes qui ressemblent à des données JSON (chunks du tableau)
+            return l.startsWith('[') || (l.startsWith('{') && !l.includes('"source"') && !l.includes('"totalChunks"'));
+          });
+          const ventesJson = dataLines.join('');
+          const ventes = JSON.parse(ventesJson);
+          obj = {
+            source: 'NAV_TCD',
+            generatedAt: header.generatedAt,
+            count: header.count,
+            ventes: ventes
+          };
+        } catch(e) {
+          setCardState(key, 'error');
+          setFeedback(key, 'err', 'Erreur recomposition chunks : ' + e.message + ' — Vérifie que tu as copié A3 jusqu\'à la ligne END.');
+          return;
+        }
+      } else {
+        // Format normal (JSON complet en une seule cellule)
+        try {
+          obj = JSON.parse(raw);
+        } catch(e) {
+          setCardState(key, 'error');
+          setFeedback(key, 'err', 'JSON invalide : ' + e.message);
+          return;
+        }
+      }
+    } else {
+      // Sources 2 et 3 - parse normal
+      try {
+        obj = JSON.parse(raw);
+      } catch (e) {
+        setCardState(key, 'error');
+        setFeedback(key, 'err', 'JSON invalide : ' + e.message);
+        return;
+      }
     }
 
     // Vérif source
